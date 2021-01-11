@@ -6,11 +6,12 @@ Laravel Forms is just a simple class used to generate the html for forms and ass
 ## Prerequisites
 * Composer
 * PHP 7.2 or Higher
+* Laravel Install
 
 ## Getting Started
 1. Installation process is still being developed.  Eventually it will be installed via composer:
 ```sh
-composer require Coyote6/laravel-forms.
+composer require Coyote6/laravel-forms
 ```
 
 ## To Use
