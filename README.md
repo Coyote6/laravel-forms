@@ -37,7 +37,7 @@ For best use it is recommended to set up the form in the controller under its ow
 
 namespace App\Http\Controllers;
 
-use Coyote6\Laravel-Forms\Form;
+use Coyote6\LaravelForms\Form;
 use Illuminate\Http\Request;
 
 
