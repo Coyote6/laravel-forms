@@ -47,9 +47,9 @@ class HomeController extends Controller  {
 	protected function form () {
 
 		$form = new Form();
-	  $form->action = '/home';
-	  $form->method = 'POST';
-
+		$form->action = '/home';
+		$form->method = 'POST';
+		
 		$field1 = $form->email('email');	
 		$field1->addAttribute ('placeholder', 'Please, Enter Your Email Address');
 		$field1->required();
@@ -57,14 +57,14 @@ class HomeController extends Controller  {
 		$field2 = $form->checkbox ('tos');
 		$field2->label = 'You must agree to our ToS.';
 		$field2->required();
-	
+		
 		return $form;
 		
 	}
 
 
 	public function create () {
-    return view ('home',['form'=> $this->form()]);
+		return view ('home',['form'=> $this->form()]);
 	}
 	
 	
