@@ -1,0 +1,19 @@
+{
+    "name": "coyote6/laravel-forms",
+    "type": "library",
+    "description": "Simple class used to generate the html for forms and assist with the validation process in Laravel.",
+    "keywords": ["laravel","forms","validation","html"],
+    "homepage": "https://coyote6.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tanner Naeher",
+            "email": "tanner@coyote6.com",
+            "homepage": "https://coyote6.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=7.2.0"
+    },
+}
