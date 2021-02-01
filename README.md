@@ -16,8 +16,11 @@ composer require Coyote6/laravel-forms
 
 ## To Use
 
-### In the controller file
+### Basic Example
+#### In the controller file
 ```php
+use Coyote6\LaravelForms\Form;
+
 $form = new Form();
 $field1 = $form->text('field-name--1');	
 $field1->addRule ('min', '5');
@@ -26,14 +29,15 @@ $field1->required();
 $field2 = $form->textArea ('field-name--2');
 $field2->label = 'Field 2';
 ```
-### In Blade Template
+#### In Blade Template
 ``` PHP
 {{ $form }}
 ```
 
+### Best Practice
 For best use it is recommended to set up the form in the controller under its own private/protected method, so that it may be reused for validation.
 
-### In the controller file
+#### In the controller file
 ```php
 
 namespace App\Http\Controllers;
@@ -78,9 +82,38 @@ class HomeController extends Controller  {
 
 ```
 
-### Radio Button Examples
+### Validation
+```php
+$form = new Form();
+$form->action = '/home';
+$form->method = 'PUT';
 
-#### Simple Radio Button
+$u = $form->username ('username');
+$u->required();
+$u->addRules (['min:8', 'max:255', 'unique:users']); // Add laravel validation rules as an array.
+
+$e = $form->email ('email');
+$e->required();
+$e->addRule ('max:255'); // Add laravel validation rules individually
+$e->addRule ('unique', 'users');
+$ec = $e->confirm();  // Automatically adds extra confirm field and validates it.
+
+$p = $form->password ('password');	
+$p->required();
+$p->addRules (['min:5', 'max:255']]);
+$p->removeRule ('max');  // Remove rules by their name
+$p->confirm();
+
+// Default submit button gets automatically added, unless told otherwise.
+if (isset ($_POST['submit'])) {
+	$validatedData = $form->validate();
+	return $validatedData;
+}
+```
+
+### Available Fields (More to come)
+#### Radio Buttons
+##### Simple Radio Button
 ```php
 
 $r1 = $form->radios ('radio-1');
@@ -95,7 +128,7 @@ $r1->required();
 
 ```
 
-#### Radio Buttons with HTML
+##### Radio Buttons with HTML
 ```php
 
 $r2 = $form->radios ('radio-2');
