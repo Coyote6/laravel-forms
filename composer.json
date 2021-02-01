@@ -14,6 +14,12 @@
         }
     ],
     "require": {
-        "php": ">=7.2.0"
+        "php": ">=7.2.0",
+        "laravel/laravel": ">=6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Coyote6\\LaravelForms\\": "src/"
+        }
     },
 }
