@@ -21,5 +21,5 @@
         "psr-4": {
             "Coyote6\\LaravelForms\\": "src/"
         }
-    },
+    }
 }
