@@ -78,4 +78,48 @@ class HomeController extends Controller  {
 
 ```
 
+### Radio Button Examples
+
+#### Simple Radio Button
+```php
+
+$r1 = $form->radios ('radio-1');
+$r1->label = "Please select an option";
+$r1->addOptions([
+  'o1' => 'Option 1',
+  'o2' => 'Option 2',
+  'o3' => 'Option 3',
+  'o4' => 'Option 4'
+]);
+$r1->required();
+
+```
+
+#### Radio Buttons with HTML
+```php
+
+$r2 = $form->radios ('radio-2');
+$r2->required();
+$r2->value = 'o1';  // Set a default value
+	    
+$rb1 = new Radio ('radio-2');
+$rb1->label = 'Option 1';
+$rb1->value = 'o1';
+	    
+$h1 = new Html ('h1');
+$h1->value = 'Cool HTML info about option 1';
+	    
+$rb2 = new Radio ('radio-2');
+$rb2->label = 'Option 2';
+$rb2->value = 'o2';
+
+$h2 = new Html ('h2');
+$h2->value = 'Cool HTML info about option 2';
+
+$r2->addField ($rb1);
+$r2->addField ($h1);
+$r2->addField ($rb2);
+$r2->addField ($h2);
+
+```
 

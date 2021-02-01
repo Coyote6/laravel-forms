@@ -1,0 +1,1 @@
+<option {!! $attributes !!}>{{ $label }}</option>
