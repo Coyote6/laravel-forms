@@ -20,7 +20,7 @@ class Option {
 	
 	
 	public function __toString() {
-		$this->render();
+		return $this->generateHtml();
 	}
 	
 	
@@ -56,7 +56,7 @@ class Option {
 		if (!view()->exists ($template)) {
       $template = 'laravel-forms::' . $template;
     }
-		return view ($template, $vars);
+		return view ($template, $vars)->render();
 	
 	}
 	

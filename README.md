@@ -30,7 +30,7 @@ $field2->label = 'Field 2';
 ```
 #### In Blade Template
 ``` PHP
-{{ $form }}
+{!! $form !!}
 ```
 
 ### Best Practice

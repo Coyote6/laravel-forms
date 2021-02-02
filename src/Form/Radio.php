@@ -60,7 +60,7 @@ class Radio extends Input {
 			if (!view()->exists ($template)) {
         $template = 'laravel-forms::' . $template;
       }
-			return view ($template, $vars);
+			return view ($template, $vars)->render();
 
 		}
 	}

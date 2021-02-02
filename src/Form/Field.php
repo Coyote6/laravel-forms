@@ -9,7 +9,7 @@ use Coyote6\LaravelForms\Traits\Rules;
 use Coyote6\LaravelForms\Traits\Weighted;
 
 
-class Field {
+abstract class Field {
 
 
 	use Attributes, Weighted, Rules, GroupedWithFormButtons;
@@ -30,7 +30,8 @@ class Field {
 	}
 	
 	public function __toString() {
-		$this->render();
+		dd ($this->generateHtml());
+		return $this->generateHtml();
 	}
 	
 	public function __get ($name) {
@@ -76,7 +77,7 @@ class Field {
 			if (!view()->exists ($template)) {
         $template = 'laravel-forms::' . $template;
       }
-			return view($template, $vars);
+			return view($template, $vars)->render();
 		}
 	}
 	

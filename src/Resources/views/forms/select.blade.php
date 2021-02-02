@@ -7,7 +7,7 @@
 	<div class="input-container input-container--{{ $type }}">
 		<select {!! $attributes !!}>
 			@foreach ($options as $option)
-				{{ $option->render() }}
+				{!! $option !!}
 			@endforeach
 		</select>
 	</div>

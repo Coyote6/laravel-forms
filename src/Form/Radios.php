@@ -69,6 +69,11 @@ class Radios extends FieldGroup {
 		}
 	}
 	
+	public function setOptions (array $options) {
+		$this->addOptions ($options);
+	}
+	
+	
 	public function generateHtml () {
 		
 		$val = old ($this->name, $this->value);

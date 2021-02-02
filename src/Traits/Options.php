@@ -28,6 +28,9 @@ trait Options {
 		}
 	}
 	
+	public function setOptions (array $options) {
+		$this->addOptions ($options);
+	}
 	
 	public function removeOption (string $value) {
 		if (isset ($this->options[$value])) {

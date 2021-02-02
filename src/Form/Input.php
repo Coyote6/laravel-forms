@@ -7,7 +7,7 @@ namespace Coyote6\LaravelForms\Form;
 use Coyote6\LaravelForms\Form\Field;
 
 
-class Input extends Field {
+abstract class Input extends Field {
 	
 	
 	protected $type = 'input';

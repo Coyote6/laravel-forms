@@ -5,6 +5,7 @@ namespace Coyote6\LaravelForms\Form;
 
 
 use Coyote6\LaravelForms\Traits\Attributes;
+use Coyote6\LaravelForms\Traits\AddFields;
 use Coyote6\LaravelForms\Traits\GroupedWithFormButtons;
 use Coyote6\LaravelForms\Traits\Weighted;
 
@@ -14,13 +15,12 @@ use Illuminate\Database\Eloquent\Model;
 class FieldGroup {
 
 
-	use Attributes, Weighted, GroupedWithFormButtons;
+	use Attributes, AddFields, Weighted, GroupedWithFormButtons;
 		
 			
 	protected $type = 'field-group';
 	protected $name;
 	protected $template = 'field-group';
-	protected $fields = [];
 	
 	public $label = false;
 	
@@ -43,18 +43,12 @@ class FieldGroup {
 	
 	
 	public function __toString() {
-		$this->generateHtml();
+		return $this->generateHtml();
 	}
 	
-	
-	public function addField (Field $field) {
-		$this->fields[$field->name] = $field;
-	}
+
 	
 	
-	public function fields () {
-		return $this->fields;
-	}
 	
 	
 	protected function sortFields () {
@@ -91,7 +85,7 @@ class FieldGroup {
 		if (!view()->exists ($template)) {
       $template = 'laravel-forms::' . $template;
     }
-		return view ($template, $vars);
+		return view ($template, $vars)->render();
 	}
 	
 	
