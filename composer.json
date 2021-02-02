@@ -17,5 +17,12 @@
         "psr-4": {
             "Coyote6\\LaravelForms\\": "src/"
         }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Coyote6\\LaravelForms\\Providers\\FormServiceProvider"
+            ]
+        }
     }
 }
