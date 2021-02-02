@@ -18,7 +18,7 @@ composer require Coyote6/laravel-forms
 ### Basic Example
 #### In the controller file
 ```php
-use Coyote6\LaravelForms\Form;
+use Coyote6\LaravelForms\Form\Form;
 
 $form = new Form();
 $field1 = $form->text('field-name--1');	
@@ -41,7 +41,7 @@ For best use it is recommended to set up the form in the controller under its ow
 
 namespace App\Http\Controllers;
 
-use Coyote6\LaravelForms\Form;
+use Coyote6\LaravelForms\Form\Form;
 use Illuminate\Http\Request;
 
 
