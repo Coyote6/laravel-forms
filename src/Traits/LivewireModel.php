@@ -31,6 +31,10 @@ trait LivewireModel {
 	public function getLwModel () {
 		return $this->getLivewireModel();
 	}
+	
+	public function getLw () {
+		return $this->getLivewireModel();
+	}
 		
 	
 }

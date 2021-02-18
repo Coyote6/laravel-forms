@@ -135,6 +135,11 @@ class Example extends Component {
 		$pc->label = 'Confirm Password';
 		$pc->lwModel ('passwordConfirmation');
 		
+		//
+		// Use getLivewireModel(), getLwModel(), getLw() methods to retrieve the Livewire model name.
+		// $pc->getLw();
+		//
+		
 		return $form;
 		
 	}
