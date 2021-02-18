@@ -1,8 +1,8 @@
 {
     "name": "coyote6/laravel-forms",
     "type": "library",
-    "description": "Simple class used to generate the html for forms and assist with the validation process in Laravel.",
-    "keywords": ["laravel","forms","validation","html"],
+    "description": "Simple class used to generate the html for forms and assist with the validation process in Laravel with optional Livewire integration.",
+    "keywords": ["laravel","forms","validation","html","livewire"],
     "homepage": "https://coyote6.com",
     "license": "MIT",
     "authors": [
