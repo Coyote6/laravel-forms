@@ -13,24 +13,28 @@ trait ConfirmationField {
 		$class = $rClass->getShortName();
 		return lcfirst ($class);
 	}
+	
 
-	public function confirm ($form) {
-		return $this->addConfirmationField ($form);
+	public function confirm () {
+		return $this->addConfirmationField();
 	}
 	
-	public function addConfirm ($form) {
-		return $this->addConfirmationField ($form);
+	
+	public function addConfirm () {
+		return $this->addConfirmationField();
 	}
+	
 
-	public function addConfirmationField ($form) {
+	public function addConfirmationField () {
 		$name = $this->name . '_confirmation';
 		$field = static::confirmationFieldName();
-		$pcf = $form->$field ($name);
+		$pcf = $this->parent->$field ($name);
 		$this->addRule('confirmed');
 		if (is_string ($this->label) && $this->label != '') {
 			$pcf->label = 'Confirm ' . $this->label;
 		}
 		return $pcf;
 	}	
+	
 	
 }

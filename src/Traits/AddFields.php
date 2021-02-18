@@ -33,14 +33,17 @@ trait AddFields {
 		if ($field instanceof Radio) {
 			$fieldGroup = Radios::get($field->name);
 			$fieldGroup->addField($field);
+			$fieldGroup->parent = $this;
 			$this->fields[$fieldGroup->name] = $fieldGroup;
 		}
 		else {
+			$field->parent = $this;
 			$this->fields[$field->name] = $field;
 		}
 	}
 	
 	public function addFieldGroup (FieldGroup $fieldGroup) {
+		$fieldGroup->parent = $this;
 		$this->fields[$fieldGroup->name] = $fieldGroup;
 	}
 	

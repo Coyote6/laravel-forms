@@ -5,6 +5,7 @@ namespace Coyote6\LaravelForms\Form;
 
 use Coyote6\LaravelForms\Traits\Attributes;
 use Coyote6\LaravelForms\Traits\GroupedWithFormButtons;
+use Coyote6\LaravelForms\Traits\LivewireModel;
 use Coyote6\LaravelForms\Traits\Rules;
 use Coyote6\LaravelForms\Traits\Weighted;
 
@@ -12,7 +13,7 @@ use Coyote6\LaravelForms\Traits\Weighted;
 abstract class Field {
 
 
-	use Attributes, Weighted, Rules, GroupedWithFormButtons;
+	use Attributes, Weighted, Rules, GroupedWithFormButtons, LivewireModel;
 	
 		
 	protected $type;
@@ -21,6 +22,7 @@ abstract class Field {
 	
 	public $value;
 	public $label = false;
+	public $parent;
 	
 	
 	public function __construct (string $name) {

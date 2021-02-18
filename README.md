@@ -81,6 +81,71 @@ class HomeController extends Controller  {
 
 ```
 
+### Use with Livewire
+#### In the component
+```php
+ 
+namespace App\Http\Livewire;
+ 
+use Livewire\Compoent;
+use Coyote6\LaravelFroms\Form\Form;
+ 
+class Example extends Component {
+	 
+	 
+	public $email = '';
+	public $password = '';
+	public $passwordConfirmation = '';
+	
+	
+	public function render () {
+		
+		$vars = [
+			'form' => $this->form()
+		];
+		
+		return view ('livewire.example', $vars);	
+		
+	}
+	 
+	 
+	public function store () {
+		
+		$values = $this->validate ($this->form()->livewireRules());  // lwRules() is an alias to livewireRules()
+		
+		return ['success' => $values];
+		
+	}
+	
+	
+	public function form () {
+		
+		$form = new Form();	
+		$form->addAttribute ('wire:submit.prevent', 'store');
+		
+		$e = $form->email ('email');
+		$e->label = 'Email';
+		$e->livewireModel ('email');
+		
+		$p = $form->password ('password');
+		$p->label = 'Password';
+		$p->lwModel ('password'); // Alias to livewireModel() method
+		
+		$pc = $p->confirm();
+		$pc->label = 'Confirm Password';
+		$pc->lwModel ('passwordConfirmation');
+		
+		return $form;
+		
+	}
+	
+}
+```
+#### In the Livewire Blade Template
+``` PHP
+{!! $form !!}
+```
+
 ### Validation
 ```php
 $form = new Form();

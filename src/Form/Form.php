@@ -6,6 +6,7 @@ namespace Coyote6\LaravelForms\Form;
 
 use Coyote6\LaravelForms\Traits\Attributes;
 use Coyote6\LaravelForms\Traits\AddFields;
+use Coyote6\LaravelForms\Traits\LivewireRules;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -14,7 +15,7 @@ use Illuminate\Support\Collection;
 class Form {
 
 
-	use Attributes, AddFields;
+	use Attributes, AddFields, LivewireRules;
 		
 	
 	protected $model;
