@@ -10,7 +10,9 @@ trait LivewireRules {
 	public function livewireRules () {
 		$rules = [];
 		foreach ($this->sortFields() as $name => $field) {
-			$rules[$field->getLivewireModel()] = $field->rules;
+			if (is_string ($field->getLivewireModel()) && $field->getLivewireModel() != '') {
+				$rules[$field->getLivewireModel()] = $field->rules;
+			}
 		}
 		return $rules;
 	}

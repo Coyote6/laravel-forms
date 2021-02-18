@@ -12,7 +12,11 @@ trait LivewireModel {
 	
 	public function livewireModel (string $name) {
 		$this->livewireModel = $name;
-		$this->addAttribute ('wire.model', $name);
+		$this->addAttribute ('wire:model', $name);
+	}
+	
+	public function lwModel (string $name) {
+		$this->livewireModel ($name);
 	}
 	
 	public function lw (string $name) {
