@@ -11,6 +11,9 @@ class Textarea extends Field {
 	
 	protected $type = 'textarea';
 	protected $template = 'textarea';
-	protected $defualtRules = ['string'];
+
+	protected function defaultRules() {
+		return ['nullable', 'string'];
+	}
 	
 }

@@ -15,8 +15,12 @@ class Email extends Text {
 	
 	
 	protected $type = 'email';
-	protected $defualtRules = ['string', 'email'];
-	
+
+
+	protected function defaultRules () {
+		return ['string', 'email'];
+	}	
+
 	
 }
 

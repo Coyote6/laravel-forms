@@ -10,12 +10,7 @@ use Illuminate\Validation\Rule;
 trait Rules {
 	
 
-	protected $defaultRules = [];
-
-
-	protected $rules = [
-		'nullable' => 'nullable'
-	];
+	protected $rules = [];
 	
 	
 	public function getRuleName ($rule) {
@@ -76,8 +71,11 @@ trait Rules {
 	}
 	
 	
+	// Return array of rules.
+	abstract protected function defaultRules();
+	
 	public function setDefaultRules () {
-		$this->addRules ($this->defaultRules);
+		$this->addRules ($this->defaultRules());
 	}
 	
 	

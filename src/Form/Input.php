@@ -20,6 +20,11 @@ abstract class Input extends Field {
 	}
 	
 	
+	protected function defaultRules() {
+		return ['nullable'];
+	}
+	
+	
 	public function renderAttributes () {
 		
 		$attrs = [];

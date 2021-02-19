@@ -23,11 +23,24 @@ class Radios extends FieldGroup {
 	
 	
 	public function __get ($name) {
+		
+		//
+		// We can't put the in: validation into the default rules
+		// as we do not know the option values when the field is
+		// first added, so until we are validating the rules to get
+		// the option values.
+		//
 		if ($name == 'rules' && !isset ($this->rules['in'])) {
 			$this->rules['in'] = Rule::in($this->optionValues());
 			return $this->rules;
 		}
+		
 		return parent::__get ($name);
+	}
+	
+	
+	protected function defaultRules() {
+		return ['nullable'];
 	}
 	
 	

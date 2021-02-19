@@ -10,8 +10,11 @@ use Coyote6\LaravelForms\Form\Input;
 class Number extends Input {
 	
 	protected $type = 'number';
-	protected $defualtRules = ['numeric'];
-		
+	
+	protected function defaultRules() {
+		return ['nullable', 'numeric'];
+	}
+	
 }
 
 

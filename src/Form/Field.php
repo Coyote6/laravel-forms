@@ -32,7 +32,6 @@ abstract class Field {
 	}
 	
 	public function __toString() {
-		dd ($this->generateHtml());
 		return $this->generateHtml();
 	}
 	
@@ -40,6 +39,11 @@ abstract class Field {
 		if (in_array ($name, ['name', 'type', 'weight', 'template', 'rules'])) {
 			return $this->$name;
 		}
+	}
+	
+	
+	protected function defaultRules() {
+		return [];
 	}
 	
 	

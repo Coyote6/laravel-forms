@@ -17,8 +17,12 @@ class Password extends Input {
 	
 	
 	protected $type = 'password';
-	protected $defualtRules = ['string'];
-	
+
+
+	protected function defaultRules() {
+		return ['nullable', 'string'];
+	}
+		
 		
 }
 

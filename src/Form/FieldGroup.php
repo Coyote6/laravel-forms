@@ -45,11 +45,7 @@ class FieldGroup {
 	public function __toString() {
 		return $this->generateHtml();
 	}
-	
 
-	
-	
-	
 	
 	protected function sortFields () {
 		$toSort = [];

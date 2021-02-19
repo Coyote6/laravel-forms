@@ -25,6 +25,11 @@ class Select extends Field {
 		}
 		return parent::__get ($name);
 	}
+	
+	
+	protected function defaultRules() {
+		return ['nullable'];
+	}
 
 		
 	public function renderAttributes () {

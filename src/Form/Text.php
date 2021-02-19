@@ -10,7 +10,10 @@ use Coyote6\LaravelForms\Form\Input;
 class Text extends Input {
 	
 	protected $type = 'text';
-	protected $defualtRules = ['string'];
+
+	protected function defaultRules() {
+		return ['nullable', 'string'];
+	}
 	
 }
 

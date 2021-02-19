@@ -16,6 +16,13 @@ class Checkbox extends Input {
 	
 	
 	public function __get ($name) {
+		
+		//
+		// We can't put the in: validation into the default rules
+		// as we do not know the option values when the field is
+		// first added, so until we are validating the rules to get
+		// the value and set it to only available option, if not null.
+		//
 		if ($name == 'rules' && !isset ($this->rules['in'])) {
 			$this->rules['in'] = Rule::in([$this->value]);
 		}
