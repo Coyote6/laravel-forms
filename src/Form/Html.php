@@ -12,20 +12,14 @@ class Html extends Field {
 	protected $type = 'html';
 	protected $template = 'html';
 		
-	public function generateHtml () {
-		$vars = [
-			'content' => $this->value,
-			'attributes' => $this->renderAttributes(),
-			'id' => $this->name,
-			'name' => $this->name,
-			'type' => $this->type
-		];
+	
+	public function templateVariables () {
+	
+		$vars = parent::templateVariables();
+		$vars += ['content' => $this->value];
+
+		return $vars;		
 		
-		$template = 'forms.' . $this->template;
-		if (!view()->exists ($template)) {
-      $template = 'laravel-forms::' . $template;
-    }
-		return view ($template, $vars)->render();
 	}
 }
 

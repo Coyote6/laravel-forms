@@ -10,6 +10,7 @@ use Coyote6\LaravelForms\Form\Email;
 use Coyote6\LaravelForms\Form\Field;
 use Coyote6\LaravelForms\Form\FieldGroup;
 use Coyote6\LaravelForms\Form\File;
+use Coyote6\LaravelForms\Form\Form;
 use Coyote6\LaravelForms\Form\Hidden;
 use Coyote6\LaravelForms\Form\Html;
 use Coyote6\LaravelForms\Form\Image;
@@ -34,16 +35,34 @@ trait AddFields {
 			$fieldGroup = Radios::get($field->name);
 			$fieldGroup->addField($field);
 			$fieldGroup->parent = $this;
+			if ($fieldGroup->parent instanceof Form) {
+				$fieldGroup->form = $fieldGroup->parent;
+			}
+			else {
+				$fieldGroup->form = $fieldGroup->parent->form;
+			}
 			$this->fields[$fieldGroup->name] = $fieldGroup;
 		}
 		else {
 			$field->parent = $this;
+			if ($field->parent instanceof Form) {
+				$field->form = $field->parent;
+			}
+			else {
+				$field->form = $field->parent->form;
+			}
 			$this->fields[$field->name] = $field;
 		}
 	}
 	
 	public function addFieldGroup (FieldGroup $fieldGroup) {
 		$fieldGroup->parent = $this;
+		if ($fieldGroup->parent instanceof Form) {
+			$fieldGroup->form = $fieldGroup->parent;
+		}
+		else {
+			$fieldGroup->form = $fieldGroup->parent->form;
+		}
 		$this->fields[$fieldGroup->name] = $fieldGroup;
 	}
 	

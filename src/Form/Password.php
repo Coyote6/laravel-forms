@@ -5,25 +5,12 @@ namespace Coyote6\LaravelForms\Form;
 
 
 use Coyote6\LaravelForms\Form\Input;
-use Coyote6\LaravelForms\Traits\ConfirmationField;
 
 
-class Password extends Input {
-	
-	use ConfirmationField;
-	
-	
-	const CONFIRMATION_FIELD = 'password';
-	
+class Password extends Text {		
 	
 	protected $type = 'password';
 
-
-	protected function defaultRules() {
-		return ['nullable', 'string'];
-	}
-		
-		
 }
 
 

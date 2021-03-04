@@ -12,31 +12,28 @@ class Checkbox extends Input {
 
 	
 	protected $type = 'checkbox';
-	protected $template = 'input--reversed';
+	protected $template = 'input--checkbox';
 	
 	
-	public function __get ($name) {
-		
-		//
-		// We can't put the in: validation into the default rules
-		// as we do not know the option values when the field is
-		// first added, so until we are validating the rules to get
-		// the value and set it to only available option, if not null.
-		//
-		if ($name == 'rules' && !isset ($this->rules['in'])) {
-			$this->rules['in'] = Rule::in([$this->value]);
+	public function rules () {
+		$vals = [$this->value];
+		if (!isset ($this->rules['required'])) {
+			$vals[] = '';
 		}
-		return parent::__get ($name);
+		$this->rules['in'] = Rule::in($vals);
+		return $this->rules;
 	}
+	
 
-	public function generateHtml () {
+	protected function prerender () {
 		
-		$val = old ($this->name, $this->value);
+		$val = old ($this->name);
 		if ($val == $this->value) {
 			$this->addAttribute('checked');
 		}
-		return parent::generateHtml();
 		
+		parent::prerender();
+	
 	}
 
 

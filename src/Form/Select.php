@@ -19,49 +19,26 @@ class Select extends Field {
 	use Options;	
 	
 	
-	public function __get ($name) {
-		if ($name == 'rules' && !isset ($this->rules['in'])) {
-			$this->rules['in'] = Rule::in($this->optionValues());
-		}
-		return parent::__get ($name);
-	}
-	
-	
 	protected function defaultRules() {
 		return ['nullable'];
 	}
+	
+	public function rules () {
+		$this->rules['in'] = Rule::in($this->optionValues());
+		return $this->rules;
+	}
 
 		
-	public function renderAttributes () {
-		
-		$attrs = [];
-		
-		if (!empty ($this->classes)) {
-			$attrs[] = 'class="' . implode (' ', $this->classes) . '"';
-		}
-		
-		$attrs[] = 'id="' . str_replace ('"', '\"', $this->name . '--' . $this->value) . '"';
-		$attrs[] = 'name="' . str_replace ('"', '\"', $this->name) . '"';
-		
-		foreach ($this->attributes as $name => $value) {
-
-			if (!in_array ($name, ['name', 'value', 'default', 'id', 'type', 'class'])) {
-				if ($name == 'checked' || $name == 'required') {
-					$attrs[] = $name;
-				}
-				else {
-					$attrs[] = $name . '="' . str_replace ('"', '\"', $value) . '"';
-				}
-			}
-		}
-		
-		return implode (' ', $attrs);
+	public function renderAttributes () {		
+		$this->addAttribute ('name', $this->name);
+		return parent::renderAttributes();
 	}
 	
 	
-	public function generateHtml () {
+	protected function prerender () {
 		
 		$val = old ($this->name, $this->value);
+		
 		$hasDefault = false;
 		foreach ($this->options as $o) {
 			if ($o->value == $val) {
@@ -72,32 +49,23 @@ class Select extends Field {
 			}
 		}
 		
-		
 		if (!$hasDefault) {
 			$default = new Option();
 			$default->value = '';
 			$default->label = '-- Please Select --';
 			array_unshift($this->options, $default);
 		}
-				
-		if ($this->template) {
-			$vars = [
-				'attributes' => $this->renderAttributes(),
-				'value' => $val,
-				'label' => $this->label,
-				'id' => $this->name . '--' . $this->value,
-				'name' => $this->name,
-				'type' => $this->type,
-				'options' => $this->options()
-			];
-			
-			$template = 'forms.' . $this->template;
-			if (!view()->exists ($template)) {
-        $template = 'laravel-forms::' . $template;
-      }
-			return view ($template, $vars)->render();
-			
-		}
+		
+		$this->labelTag->addAttribute ('for', $this->name);
+		$this->addAttribute ('id', $this->name);
+	
+	}
+	
+	
+	public function templateVariables () {
+		$vars = parent::templateVariables();
+		$vars += ['options' => $this->options()];
+		return $vars;
 	}
 		
 }

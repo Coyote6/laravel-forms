@@ -1,3 +1,3 @@
-<div id="{{ $id }}" class="container html-container form-item form-item--{{ $type }}">
+@if ($display_form_item)<div {!! $form_item_attributes !!}>@endif
 	{!! $content !!}
-</div>
+@if ($display_form_item)</div>@endif

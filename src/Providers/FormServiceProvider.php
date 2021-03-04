@@ -26,7 +26,9 @@ class FormServiceProvider extends ServiceProvider {
    * @return void
    */
   public function boot() {
-    //
+    $this->publishes([
+        __DIR__ . '/../Resources/config/laravel-forms.php' => config_path('laravel-forms.php'),
+    ], 'laravel-forms');
   }
   
 }

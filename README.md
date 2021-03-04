@@ -12,6 +12,10 @@ Laravel Forms is just a simple class used to generate the html for forms and ass
 ```sh
 composer require Coyote6/laravel-forms
 ```
+2. Copy the config file to your config folder.
+```sh
+php artisan vendor:publish --tag=laravel-forms
+```
 
 ## To Use
 
@@ -32,6 +36,7 @@ $field2->label = 'Field 2';
 ``` PHP
 {!! $form !!}
 ```
+
 
 ### Best Practice
 For best use it is recommended to set up the form in the controller under its own private/protected method, so that it may be reused for validation.
@@ -81,75 +86,6 @@ class HomeController extends Controller  {
 
 ```
 
-### Use with Livewire
-#### In the component
-```php
- 
-namespace App\Http\Livewire;
- 
-use Livewire\Compoent;
-use Coyote6\LaravelFroms\Form\Form;
- 
-class Example extends Component {
-	 
-	 
-	public $email = '';
-	public $password = '';
-	public $passwordConfirmation = '';
-	
-	
-	public function render () {
-		
-		$vars = [
-			'form' => $this->form()
-		];
-		
-		return view ('livewire.example', $vars);	
-		
-	}
-	 
-	 
-	public function store () {
-		
-		$values = $this->validate ($this->form()->livewireRules());  // lwRules() is an alias to livewireRules()
-		
-		return ['success' => $values];
-		
-	}
-	
-	
-	public function form () {
-		
-		$form = new Form();	
-		$form->addAttribute ('wire:submit.prevent', 'store');
-		
-		$e = $form->email ('email');
-		$e->label = 'Email';
-		$e->livewireModel ('email');
-		
-		$p = $form->password ('password');
-		$p->label = 'Password';
-		$p->lwModel ('password'); // Alias to livewireModel() method
-		
-		$pc = $p->confirm();
-		$pc->label = 'Confirm Password';
-		$pc->lwModel ('passwordConfirmation');
-		
-		//
-		// Use getLivewireModel(), getLwModel(), getLw() methods to retrieve the Livewire model name.
-		// $pc->getLw();
-		//
-		
-		return $form;
-		
-	}
-	
-}
-```
-#### In the Livewire Blade Template
-``` PHP
-{!! $form !!}
-```
 
 ### Validation
 ```php
@@ -180,12 +116,220 @@ if (isset ($_POST['submit'])) {
 }
 ```
 
+
+### Use with Livewire
+#### In the your base app blade template, below where you call @livewireScripts, add a stack('scripts') call if you haven't already done so.
+```php
+@stack('scripts')
+```
+
+#### In the component
+```php
+ 
+namespace App\Http\Livewire;
+ 
+use Livewire\Compoent;
+use Coyote6\LaravelFroms\Form\Form;
+ 
+class Example extends Component {
+	 
+	 
+	public $email = '';
+	public $password = '';
+	public $passwordConfirmation = '';
+	
+	
+	protected function rules() {
+    return $this->form()->lwRules(); // lwRules() is an alias to livewireRules()
+  }
+    	
+	public function updated ($field) {
+		$this->validateOnly($field);
+	}
+	
+	
+	public function render () {
+		return view ('livewire.example', ['form' => $this->form()]);		
+	}
+	
+	 
+	public function store () {
+		
+		$values = $this->validate();  
+		return ['success' => $values];
+		
+	}
+	
+	
+	// Optionally set up a store method as a fallback in case someone shuts off JavaScript
+	public function storeFallback () {
+		$values = $this->form()->validate();
+		return ['success' => $values;
+	}
+	
+	
+	public function form () {
+		
+		$form = new Form ($this); 	// Sets up the form as a Livewire form... alternatively you can call $form->isLivewireForm($this);	
+		$form->action = '/store';		// Optional fallback in case someone shuts off Javascript
+	  $form->method('POST');
+		$form->addAttribute ('wire:submit.prevent', 'store');
+		
+		$e = $form->email ('email');
+		$e->label = 'Email';
+		$e->livewireModel ('email');
+		$e->required();
+		$e->addRule('unique:users');
+		
+		$p = $form->password ('password');
+		$p->label = 'Password';
+		$p->lwModel ('password'); // Alias to livewireModel() method
+		$p->addRule ('min:6');
+		
+		$pc = $p->confirm();
+		$pc->label = 'Confirm Password';
+		$pc->lwModelLazy ('passwordConfirmation'); // Use livewireModelLazy(), lwModelLazy(), lwLazy() to call wire:model.lazy 
+		
+		//
+		// Use getLivewireModel(), getLwModel(), getLw() methods to retrieve the Livewire model name.
+		// $pc->getLw();
+		//
+		
+		return $form;
+		
+	}
+	
+}
+```
+#### In the Livewire Blade Template
+``` PHP
+{!! $form !!}
+```
+#### In the Web Routes File -- Optional
+``` PHP
+Route::post('/store', 'App\Http\Livewire\Example@storeFallback');
+
+```
+
+### Use with Tailwind CSS
+#### In the .env File
+```
+FORM_THEME=tailwind
+```
+Some classes are added to items automatically.  You can shut them off by using:
+```
+FORM_DEFAULT_CLASSES=false
+```
+If you wish to change the default tailwind classes, you can change the config/laravel-forms.php file.  The default classes are stored under the tailwind section.  Additional styling options are set in there as well.
+
 ### Available Fields (More to come)
-#### Radio Buttons
+#### Button - <button>
+```php
+
+$b = $form->button ('field-name');
+$b->value = 'Button Value';		// Is the default button content unless the content property is set.
+$b->content = 'This is what shows inside the button';
+
+```
+
+#### Checkbox - <input type="checkbox">
+```php
+
+$c = $form->checkbox ('field-name');
+$c->value = 'Value when submitted';	
+$c->label = 'Click me';
+```
+
+#### Email - <input type="email">
+##### Simple Email
+```php
+
+$e = $form->email ('field-name');
+
+```
+
+##### Email w/ Confirmation
+```php
+
+$e = $form->email ('field-name');
+$e->label = 'Email';
+$ec = $e->confirm();
+$ec->label = 'Confirm Email';
+
+```
+
+#### Field Group - <div>
+This just wraps a group of fields.  It can have a label, if desired.
+```php
+
+$fg = $form->fieldGroup ('field-name');
+$fg->label = 'Contact Info';
+```
+
+#### File - <input type="file"> (Untested at the moment)
+```php
+
+$f = $form->file ('field-name');
+$f->label = 'Upload File';
+```
+
+#### Hidden - <input type="hidden">
+```php
+
+$h = $form->hidden ('field-name');
+$h->value = 'some value';
+```
+
+#### Html - <div> 
+```php
+
+$h = $form->html ('field-name');
+$h->content = '<em>Custom Html Field</em>';
+```
+
+#### Image - <input type="file"> (Untested at the moment)
+```php
+
+$i = $form->image ('field-name');
+$i->label = 'Upload Image';
+```
+
+#### Number - <input type="number">
+```php
+
+$n = $form->number ('field-name');
+$n->label = 'Enter Your Lucky Number';
+```
+
+#### Password - <input type="password">
+##### Simple Password
+```php
+
+$p = $form->password ('field-name');
+$p->label = 'Password';
+```
+
+##### Password w/ Confirm
+```php
+
+$p = $form->password ('field-name');
+$p->label = 'Password';
+$pc = $p->confirm();
+$pc->label = 'Password Confirm';
+```
+
+#### Email - <button>
+```php
+
+$b = $form->email ('field-name');
+
+```
+
+#### Radio Buttons - <input type="radio">
 ##### Simple Radio Button
 ```php
 
-$r1 = $form->radios ('radio-1');
+$r1 = $form->radios ('field-name');
 $r1->label = "Please select an option";
 $r1->addOptions([
   'o1' => 'Option 1',
@@ -200,22 +344,22 @@ $r1->required();
 ##### Radio Buttons with HTML
 ```php
 
-$r2 = $form->radios ('radio-2');
+$r2 = $form->radios ('field-name');
 $r2->required();
 $r2->value = 'o1';  // Set a default value
 	    
-$rb1 = new Radio ('radio-2');
+$rb1 = new Radio ('field-name');
 $rb1->label = 'Option 1';
 $rb1->value = 'o1';
 	    
-$h1 = new Html ('h1');
+$h1 = new Html ('field-name--html-1');
 $h1->value = 'Cool HTML info about option 1';
 	    
-$rb2 = new Radio ('radio-2');
+$rb2 = new Radio ('field-name');
 $rb2->label = 'Option 2';
 $rb2->value = 'o2';
 
-$h2 = new Html ('h2');
+$h2 = new Html ('field-name--html-2');
 $h2->value = 'Cool HTML info about option 2';
 
 $r2->addField ($rb1);
@@ -225,3 +369,48 @@ $r2->addField ($h2);
 
 ```
 
+#### Select - <select>
+```php
+
+$s = $form->select ('field-name');
+$s->addOptions([
+  'o1' => 'Option 1',
+  'o2' => 'Option 2',
+  'o3' => 'Option 3',
+  'o4' => 'Option 4'
+]);
+$s->required();
+
+```
+
+#### Submit Button - <button> or <input type="submit">
+##### Rendered as <button>
+```php
+
+$s = $form->submitButton ('field-name');
+$s->value = 'submit';
+$s->content = 'Press me';			// $s->label becomes the content, if the content property is not set.
+
+```
+
+##### Rendered as <input type="submit">
+```php
+
+$s = $form->submitButton ('field-name');
+$s->value = 'submit';
+$s->label = 'Press me';
+$s->renderAsInput();
+
+```
+
+#### Text - <input type="text">
+```php
+
+$t = $form->text ('field-name');
+```
+
+#### Textarea - <textarea>
+```php
+
+$ta = $form->textarea ('field-name');
+```

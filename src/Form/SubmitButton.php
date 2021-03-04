@@ -17,7 +17,9 @@ class SubmitButton extends Input {
 	
 	public function __construct (string $name) {
 		parent::__construct ($name);
-		$this->classes = ['button'];
+		if ($this->defaultClasses) {
+			$this->addClass ('button');
+		}
 	}
 	
 	
@@ -30,37 +32,9 @@ class SubmitButton extends Input {
 	}
 	
 	
-	public function renderAttributes () {
+	protected function prerender () {
 		
-		if ($this->template == 'input') {
-			return parent::renderAttributes();
-		}
-		
-		$attrs = [];
-
-		if (!empty ($this->classes)) {
-			$attrs[] = 'class="' . implode (' ', $this->classes) . '"';
-		}
-		$attrs[] = 'id="' . str_replace ('"', '\"', $this->name) . '"';
-		$attrs[] = 'name="' . str_replace ('"', '\"', $this->name) . '"';
-		$attrs[] = 'value="' . str_replace ('"', '\"', $this->value) . '"';
-		
-		foreach ($this->attributes as $name => $value) {
-
-			if (!in_array ($name, ['name', 'value', 'default', 'id', 'type'])) {
-				if ($name == 'checked' || $name == 'required') {
-					$attrs[] = $name;
-				}
-				else {
-					$attrs[] = $name . '="' . str_replace ('"', '\"', $value) . '"';
-				}
-			}
-		}
-		
-		return implode (' ', $attrs);
-	}
-	
-	public function generateHtml () {
+		$this->value = old ($this->name, $this->value);
 		
 		// Add a default value if we are to render as a button.
 		if ($this->template == 'button' && !is_string ($this->content)) {
@@ -74,27 +48,19 @@ class SubmitButton extends Input {
 			//
 			$this->content = strip_tags (strip_tags ($this->content, $allowed), $allowed); 
 		}
+				
+		$this->labelTag->addAttribute ('for', $this->name);
+		$this->addAttribute ('id', $this->name);
 		
-		if ($this->template) {
-			$vars = [
-				'attributes' => $this->renderAttributes(),
-				'value' => $this->value,
-				'label' => $this->label,
-				'id' => $this->name,
-				'name' => $this->name,
-				'type' => $this->type,
-				'content' => ($this->template == 'button') ? $this->content : false
-			];
-			
-			$template = 'forms.' . $this->template;
-			if (!view()->exists ($template)) {
-        $template = 'laravel-forms::' . $template;
-      }
-			return view ($template, $vars)->render();
-			
-		}
 	}
 	
+	
+	protected function templateVariables () {
+		$vars = parent::templateVariables();
+		$vars += ['content' => ($this->template == 'button') ? $this->content : false];
+		return $vars;
+	}
+		
 	
 }
 

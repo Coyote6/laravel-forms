@@ -13,6 +13,11 @@ trait Rules {
 	protected $rules = [];
 	
 	
+	public function rules () {
+		return $this->rules;
+	}
+	
+	
 	public function getRuleName ($rule) {
 		if (!is_string ($rule)) {
 			return false;
@@ -79,11 +84,22 @@ trait Rules {
 	}
 	
 	
+	public function isRequired () {
+		if (isset ($this->rules['required'])) {
+			return true;
+		}
+		return false;
+	}
+	
+	
 	public function required () {
 		if (isset ($this->rules['nullable'])) {
 			unset ($this->rules['nullable']);
 		}
 		$this->rules['required'] = 'required';
+		if (is_callable([$this, 'addAttribute'])) {
+			$this->addAttribute ('required');
+		}
 	}
 	
 	
@@ -92,6 +108,9 @@ trait Rules {
 			unset ($this->rules['required']);
 		}
 		$this->rules['nullable'] = 'nullable';
+		if (is_callable([$this, 'removeAttribute'])) {
+			$this->removeAttribute ('required');
+		}
 	}
 	
 	

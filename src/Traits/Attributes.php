@@ -33,6 +33,12 @@ trait Attributes {
 		return $this->getAttribute ($name);
 	}	
 	
+	public function hasAttribute (string $name) {
+		if (isset ($this->attributes[$name])) {
+			return true;
+		}
+		return false;
+	}
 	
 	public function removeAttribute (string $name) {
 		if (isset ($this->attributes[$name])) {
@@ -55,21 +61,42 @@ trait Attributes {
 		else if (is_string ($classes)) {
 			$classStrs = explode (' ', $classes);
 			foreach ($classStrs as $str) {
-				$this->classes[$str] = $str;
+				$str = trim ($str);
+				if ($str != '') {
+					$this->classes[$str] = $str;
+				}
 			}
 		}
 	
 	}
 	
 	
-	public function removeClass ($name) {
-		if (isset ($this->classes[$name])) {
-			unset ($this->classes[$name]);
+	public function removeClass ($classes) {
+		
+		if (is_array ($classes)) {
+			foreach ($classes as $class) {
+				$this->removeClass ($class);
+			}
 		}
+		else if (is_string ($classes)) {
+			$classStrs = explode (' ', $classes);
+			foreach ($classStrs as $str) {
+				$str = trim ($str);
+				if ($str != '' && isset ($this->classes[$str])) {
+					unset ($this->classes[$str]);
+				}
+			}
+		}
+	}
+	
+	
+	public function resetClasses () {
+		$this->classes = [];
 	}
 
 	
 	public function renderAttributes () {
+		
 		
 		$attrs = [];
 		if (!empty ($this->classes)) {
@@ -80,12 +107,20 @@ trait Attributes {
 			if ($name == 'class') {
 				continue;
 			}
-			// Translate Placeholder Text, Descriptions, Captions, & Alt Texts
-			if (in_array ($name, ['placeholder', 'description', 'caption', 'alt'])) {
-				$value = __($value);
+			// Check for single value attributes.
+			if (in_array ($name, ['checked', 'required', 'multiple']) && $value) {
+					$attrs[] = $name;
 			}
-			$attrs[] = $name . '="' . str_replace ('"', '\"', $value) . '"';
+			// Translate Placeholder Text, Descriptions, Captions, & Alt Texts
+			else if (in_array ($name, ['placeholder', 'description', 'caption', 'alt'])) {
+				$value = __($value);
+				$attrs[] = $name . '="' . str_replace ('"', '\"', $value) . '"';
+			}
+			else {
+				$attrs[] = $name . '="' . str_replace ('"', '\"', $value) . '"';
+			}
 		}
+
 		return implode (' ', $attrs);
 	}
 	

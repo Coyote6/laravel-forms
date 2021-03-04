@@ -17,40 +17,23 @@ class Button extends Field {
 	
 	
 	public function __construct (string $name) {
-		$this->classes = ['button'];
-		$this->name = $name;
+		parent::__construct ($name);
+		if ($this->defaultClasses) {
+			$this->addClass ('button');
+		}
 	}
 	
-	
-	public function renderAttributes () {
-		
-		$attrs = [];
-		if (!empty ($this->classes)) {
-			$attrs[] = 'class="' . implode (' ', $this->classes) . '"';
-		}
-		$attrs[] = 'id="' . str_replace ('"', '\"', $this->name) . '"';
-		$attrs[] = 'name="' . str_replace ('"', '\"', $this->name) . '"';
-		$attrs[] = 'value="' . str_replace ('"', '\"', $this->value) . '"';
-		
-		foreach ($this->attributes as $name => $value) {
 
-			if (!in_array ($name, ['name', 'value', 'default', 'id', 'type', 'class'])) {
-				if ($name == 'checked' || $name == 'required') {
-					$attrs[] = $name;
-				}
-				else {
-					$attrs[] = $name . '="' . str_replace ('"', '\"', $value) . '"';
-				}
-			}
-		}
+	protected function prerender () {
 		
-		return implode (' ', $attrs);
-	}
-	
-	
-	public function generateHtml () {
+		$this->addAttribute ('name', $this->name);
+		$this->addAttribute ('type', $this->type);
+		$this->addAttribute ('value', $this->value);
+
+		$this->value = old ($this->name, $this->value);
 		
-		if (!is_string ($this->content)) {
+		// Add a default value if we are to render as a button.
+		if ($this->template == 'button' && !is_string ($this->content)) {
 			$this->content = $this->value;
 		}
 		
@@ -61,24 +44,17 @@ class Button extends Field {
 			//
 			$this->content = strip_tags (strip_tags ($this->content, $allowed), $allowed); 
 		}
-		
-		if ($this->template) {
-			$vars = [
-				'attributes' => $this->renderAttributes(),
-				'value' => $this->value,
-				'label' => $this->label,
-				'id' => $this->name,
-				'name' => $this->name,
-				'type' => $this->type,
-				'content' => $this->content
-			];
-			
-			$template = 'forms.' . $this->template;
-			if (!view()->exists ($template)) {
-        $template = 'laravel-forms::' . $template;
-      }
-			return view ($template, $vars)->render();
-		}
+				
+		$this->labelTag->addAttribute ('for', $this->name);
+		$this->addAttribute ('id', $this->name);
+						
+	}
+	
+	
+	protected function templateVariables () {
+		$vars = parent::templateVariables();
+		$vars += ['content' => ($this->template == 'button') ? $this->content : false];
+		return $vars;
 	}
 	
 	

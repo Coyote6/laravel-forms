@@ -15,5 +15,14 @@ class Textarea extends Field {
 	protected function defaultRules() {
 		return ['nullable', 'string'];
 	}
-	
+
+
+	public function renderAttributes () {
+		
+		$this->addAttribute ('name', $this->name);
+		
+		return parent::renderAttributes();
+		
+	}
+		
 }

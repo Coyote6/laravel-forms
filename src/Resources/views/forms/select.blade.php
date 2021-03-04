@@ -1,17 +1,20 @@
-<div class="form-item form-item--{{ $type }}{{ $errors->has($name) ? ' has-error' : '' }}">
-	@if ($label) 
-		<div class="label-container label-container--{{ $type }}">
-			<label for="{{ $id }}" class="label">{{ $label }}:</label>
-		</div>
+@if ($display_form_item)<div {!! $form_item_attributes !!}>@endif
+	@if ($label && $display_label) 
+		@if ($display_label_container)<div {!! $label_container_attributes !!}>@endif
+			<label {!! $label_attributes !!}>{{ $label }}@if ($display_colon_tag)<span {!! $colon_tag_attributes !!}>:</span>@endif @if ($display_required_tag)<span {!! $required_tag_attributes !!}>*</span>@endif</label>
+		@if ($display_label_container)</div>@endif
 	@endif
-	<div class="input-container input-container--{{ $type }}">
+	@if ($display_field_container)<div {!! $field_container_attributes !!}>@endif
 		<select {!! $attributes !!}>
 			@foreach ($options as $option)
 				{!! $option !!}
 			@endforeach
 		</select>
-	</div>
-	@error ($name)
-		<div class="error error-message">{{ $message }}</div>
-	@enderror
-</div>
+		@include ('laravel-forms::forms.error-icon')
+	@if ($display_field_container)</div>@endif
+	@if ($has_error)
+		@if ($display_error_message_container)<div {!! $error_message_container_attributes !!}>@endif
+			<div {!! $error_message_attributes !!}>{{ $message }}</div>
+		@if ($display_error_message_container)</div>@endif
+	@endif
+@if ($display_form_item)</div>@endif

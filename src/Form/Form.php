@@ -7,15 +7,18 @@ namespace Coyote6\LaravelForms\Form;
 use Coyote6\LaravelForms\Traits\Attributes;
 use Coyote6\LaravelForms\Traits\AddFields;
 use Coyote6\LaravelForms\Traits\LivewireRules;
+use Coyote6\LaravelForms\Traits\LivewireForm;
+use Coyote6\LaravelForms\Traits\Render;
+use Coyote6\LaravelForms\Traits\Theme;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-
+use Illuminate\Support\ViewErrorBag;
 
 class Form {
 
 
-	use Attributes, AddFields, LivewireRules;
+	use Attributes, AddFields, LivewireForm, LivewireRules, Theme, Render;
 		
 	
 	protected $model;
@@ -23,18 +26,24 @@ class Form {
 	protected $method = 'POST';
 	protected $methodOptions = ['POST', 'GET', 'PUT', 'DELETE'];
 	protected $groupSubmitButtons = true;
+	protected $template = 'form';
+	
 	
 	public $submitButton = true;
 	public $action = '/';
 	
 	
-	public function __construct ($model = null) {
-		$this->classes = ['form'];
+	public function __construct ($object = null) {
+		
+		if (is_object ($object)) {
+			if ($this->isComponent ($object)) {
+				$this->isLivewireForm ($object);
+			}
+		}
+		
+		$this->initTheme('form');
 	}
-	
-	public function __toString() {
-		return $this->generateHtml();
-	}
+
 	
 	
 	public function method (string $method) {
@@ -52,17 +61,60 @@ class Form {
 	
 	public function rules () {
 		$rules = [];
-		foreach ($this->sortFields() as $name => $field) {
-			$rules[$name] = $field->rules;
+
+		foreach ($this->flattenFields ($this->fields) as $field) {
+			if (is_callable ([$field, 'rules'])) {
+				$name = $field->name;
+				$r = $field->rules();
+				if (is_array ($r) && count ($r) > 0) {
+					$rules[$name] = $r;
+				}
+			}
 		}
 		return $rules;
 	}
 	
 	
 	public function validate () {
-		return request()->validate($this->rules());
+		return request()->validate ($this->rules());
 	}
 
+	
+	public function errors() {
+		static $errors;
+		if (is_null ($errors)) {
+			if (is_null ($this->livewireComponent)) {
+				$errors = session()->get('errors', app(ViewErrorBag::class));
+			}
+			else {
+				$errors = $this->livewireComponent->getErrorBag();
+			}
+		}
+		return $errors;
+	}
+	
+	
+	public function hasError ($fieldName) {
+		return $this->errors()->has($fieldName);
+	}
+	
+	
+	protected function flattenFields ($fields) {
+		$flatten = [];
+		foreach ($fields as $f) {
+			if (is_callable ([$f, 'fields'])) {
+				$flatten[] = $f;
+				foreach ($this->flattenFields ($f->fields()) as $child) {
+					$flatten[] = $child;
+				}
+			}
+			else {
+				$flatten[] = $f;
+			}
+		}
+		return $flatten;
+	}
+	
 	
 	protected function sortFields () {
 		$toSort = [];
@@ -78,20 +130,101 @@ class Form {
 			return [$item['name'] => $item['field']];
 		});
 	}
+
+	
+	protected function setError ($field) {
+		$field->formItemTag()->setError();
+		$field->labelContainerTag()->setError();
+		$field->labelTag()->setError();
+		$field->fieldContainerTag()->setError();
+		$field->setError();
+		$field->errorMessageContainerTag()->setError();
+		$field->errorMessageTag()->setError();
+	}
 	
 	
-	public function generateHtml () {
-		
-		// See if there is a file field and/or a submit button.
+	
+	public function templateVariables () {
+	
+		// See if there is a file field and/or a submit button,
+		// and add the error classes for any with errors.
+		//
 		$hasFileField = false;
 		$submitButtons = [];
-		foreach ($this->fields as $f) {
+		$hasConfirmField = false;
+
+		$flattenedFields = $this->flattenFields ($this->fields);
+		foreach ($flattenedFields as $f) {
+			
+			//
+			// Check if a confirm field exists.
+			//
+			if (is_callable ([$f, 'hasConfirmField']) && $f->hasConfirmField()) {
+				$hasConfirmField = true;
+			}
+			
+			
+			//
+			// Check for errors and set the classes if any are found.
+			//
+			$errorName = (is_callable ([$f, 'getLw'])) ? $f->getLw() : $f->name;
+
+			if ($this->hasError ($errorName)) {
+
+				$this->setError ($f);
+				$f->errorMessage = $this->errors()->first($errorName);
+
+				// If it exists, error the confirmed field as well.
+				if (is_callable ([$f, 'rules']) && is_callable([$f, 'hasConfirmField']) && $f->hasConfirmField()) {
+					
+					if (key_exists ('confirmed', $f->rules())) {
+						$confirmFieldName = $f->name . '_confirmation';
+						if (isset ($this->fields[$confirmFieldName])) {
+							$this->setError ($this->fields[$confirmFieldName]);
+						}
+					}
+	
+					// If it exists, error the field that should have the same value as well.
+					if (key_exists ('same', $f->rules())) {
+						$sameField = $f->rules['same'];
+						$explode = explode (':', $sameField);
+						if (isset ($explode[1]) && isset ($this->fields[$explode[1]])) {
+							$this->setError ($this->fields[$explode[1]]);
+						}
+					}
+				}
+			}
+			
+			//
+			// Check for confirmation fields and require them if the primary field
+			// is required.
+			//
+			
+			if (is_callable ($f, 'isRequired') && $f->isRequired() && is_callable ($f, 'rules')) {
+				if (key_exists ('confirmed', $f->rules())) {
+					$confirmFieldName = $f->name . '_confirmation';
+					if (isset ($this->fields[$confirmFieldName])) {
+						$this->fields[$confirmFieldName]->required();
+					}
+				}
+	
+				// If it exists, error the field that should have the same value as well.
+				if (key_exists ('same', $f->rules())) {
+					$sameField = $f->rules['same'];
+					$explode = explode (':', $sameField);
+					if (isset ($explode[1]) && isset ($this->fields[$explode[1]])) {
+						$this->fields[$explode[1]]->required();
+					}
+				}
+			}
+			
 			if ($f->type == 'file') {
 				$hasFileField = true;
 			}
 			else if ($f->type == 'submit' || ($f->type == 'button' && $f->getAttr('type') == 'submit')) {
 				$submitButtons[] = $f->name;
 			}
+
 		}
 			
 		// Add submit button if set to true and one isn't present.
@@ -138,26 +271,15 @@ class Form {
 		if ($hasFileField) {
 			$this->addAttribute ('enctype', 'multipart/form-data');
 		}
-		
-		// Export view.
-		$vars = [
+				
+		return [
 			'fields' => $fields,
 			'attributes' => $this->renderAttributes(),
 			'method' => $this->method,
-			'hidden_fields' => $hidden
+			'hidden_fields' => $hidden,
+			'has_confirm_field' => $hasConfirmField,
 		];
 		
-		$template = 'forms.form';
-		if (!view()->exists ($template)) {
-      $template = 'laravel-forms::' . $template;
-    }
-		return view ($template, $vars)->render();
-	
-	}
-	
-	
-	public function render () {
-		print $this->generateHtml();
 	}
 	
 	

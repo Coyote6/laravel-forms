@@ -7,6 +7,10 @@ namespace Coyote6\LaravelForms\Traits;
 
 trait ConfirmationField {
 	
+	
+	protected $confirmFieldName;
+	protected $hasConfirmField = false;
+	
 
 	protected static function confirmationFieldName () {
 		$rClass = new \ReflectionClass(static::class);
@@ -26,15 +30,33 @@ trait ConfirmationField {
 	
 
 	public function addConfirmationField () {
-		$name = $this->name . '_confirmation';
+		
+		$this->confirmFieldName = $this->name . '_confirmation';
 		$field = static::confirmationFieldName();
-		$pcf = $this->parent->$field ($name);
+		$cf = $this->parent->$field ($this->confirmFieldName);
+		
 		$this->addRule('confirmed');
+		$this->hasConfirmField = true;
+
+		$cf->addAttribute('wire:keyup', '$emit(\'updatedConfirmation\',\'' . $this->name . '\')');
+		$cf->addAttribute('wire:blur', '$emit(\'updatedConfirmation\',\'' . $this->name . '\')');
+		
 		if (is_string ($this->label) && $this->label != '') {
-			$pcf->label = 'Confirm ' . $this->label;
+			$cf->label = 'Confirm ' . $this->label;
 		}
-		return $pcf;
+		
+		return $cf;
 	}	
+	
+	
+	public function hasConfirmField () {
+		return $this->hasConfirmField;
+	}
+	
+	
+	public function confirmFieldName () {
+		return $this->confirmFieldName;
+	}
 	
 	
 }

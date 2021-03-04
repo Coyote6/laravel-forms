@@ -16,7 +16,9 @@ abstract class Input extends Field {
 	
 	public function __construct (string $name) {
 		parent::__construct ($name);
-		$this->addClass ('input');
+		if ($this->defaultClasses) {
+			$this->addClass ('input');
+		}
 	}
 	
 	
@@ -25,30 +27,12 @@ abstract class Input extends Field {
 	}
 	
 	
-	public function renderAttributes () {
-		
-		$attrs = [];
-		if (!empty ($this->classes)) {
-			$attrs[] = 'class="' . implode (' ', $this->classes) . '"';
-		}
-		$attrs[] = 'id="' . str_replace ('"', '\"', $this->name) . '"';
-		$attrs[] = 'type="' . str_replace ('"', '\"', $this->type) . '"';
-		$attrs[] = 'name="' . str_replace ('"', '\"', $this->name) . '"';
-		$attrs[] = 'value="' . str_replace ('"', '\"', $this->value) . '"';
-		
-		foreach ($this->attributes as $name => $value) {
+	protected function prerender () {
 
-			if (!in_array ($name, ['name', 'value', 'default', 'id', 'type', 'class'])) {
-				if (in_array ($name, ['checked', 'required', 'multiple']) && $value) {
-					$attrs[] = $name;
-				}
-				else {
-					$attrs[] = $name . '="' . str_replace ('"', '\"', $value) . '"';
-				}
-			}
-		}
+		$this->addAttribute ('name', $this->name);
+		$this->addAttribute ('type', $this->type);
+		$this->addAttribute ('value', $this->value);
 		
-		return implode (' ', $attrs);
 	}
 	
 }
