@@ -17,10 +17,8 @@ composer require Coyote6/laravel-forms
 php artisan vendor:publish --tag=laravel-forms
 ```
 
-## To Use
-
-### Basic Example
-#### In the controller file
+## Basic Usage
+In the controller file
 ```php
 use Coyote6\LaravelForms\Form\Form;
 
@@ -32,16 +30,16 @@ $field1->required();
 $field2 = $form->textArea ('field-name--2');
 $field2->label = 'Field 2';
 ```
-#### In Blade Template
+
+In Blade Template
 ``` PHP
 {!! $form !!}
 ```
 
-
-### Best Practice
+## Best Practice
 For best use it is recommended to set up the form in the controller under its own private/protected method, so that it may be reused for validation.
 
-#### In the controller file
+In the controller file
 ```php
 
 namespace App\Http\Controllers;
@@ -87,7 +85,7 @@ class HomeController extends Controller  {
 ```
 
 
-### Validation
+## Validation
 ```php
 $form = new Form();
 $form->action = '/home';
@@ -117,13 +115,13 @@ if (isset ($_POST['submit'])) {
 ```
 
 
-### Use with Livewire
-#### In the your base app blade template, below where you call @livewireScripts, add a stack('scripts') call if you haven't already done so.
+## Use with Livewire
+In the your base app blade template, below where you call @livewireScripts, add a stack('scripts') call if you haven't already done so.
 ```php
 @stack('scripts')
 ```
 
-#### In the component
+In the component
 ```php
  
 namespace App\Http\Livewire;
@@ -201,30 +199,35 @@ class Example extends Component {
 	
 }
 ```
-#### In the Livewire Blade Template
+
+In the Livewire Blade Template
 ``` PHP
 {!! $form !!}
 ```
-#### In the Web Routes File -- Optional
+
+In the Web Routes File -- Optional
 ``` PHP
 Route::post('/store', 'App\Http\Livewire\Example@storeFallback');
 
 ```
 
-### Use with Tailwind CSS
+## Use with Tailwind CSS
 You must already have tailwind installed and configured.
-#### In the .env File
+
+In the .env File
 ```
 FORM_THEME=tailwind
 ```
+
 Some classes are added to items automatically.  You can shut them off by using:
 ```
 FORM_DEFAULT_CLASSES=false
 ```
+
 If you wish to change the default tailwind classes, you can change the config/laravel-forms.php file.  The default classes are stored under the tailwind section.  Additional styling options are set in there as well.
 
-### Available Fields (More to come)
-#### Button - &lt;button&gt;
+## Available Fields (More to come)
+### Button - &lt;button&gt;
 ```php
 
 $b = $form->button ('field-name');
@@ -233,7 +236,7 @@ $b->content = 'This is what shows inside the button';
 
 ```
 
-#### Checkbox - &lt;input type="checkbox"&gt;
+### Checkbox - &lt;input type="checkbox"&gt;
 ```php
 
 $c = $form->checkbox ('field-name');
@@ -241,15 +244,15 @@ $c->value = 'Value when submitted';
 $c->label = 'Click me';
 ```
 
-#### Email - &lt;input type="email"&gt;
-##### Simple Email
+### Email - &lt;input type="email"&gt;
+Simple Email
 ```php
 
 $e = $form->email ('field-name');
 
 ```
 
-##### Email w/ Confirmation
+Email w/ Confirmation
 ```php
 
 $e = $form->email ('field-name');
@@ -259,7 +262,7 @@ $ec->label = 'Confirm Email';
 
 ```
 
-#### Field Group - &lt;div&gt;
+### Field Group - &lt;div&gt;
 This just wraps a group of fields.  It can have a label, if desired.
 ```php
 
@@ -267,50 +270,50 @@ $fg = $form->fieldGroup ('field-name');
 $fg->label = 'Contact Info';
 ```
 
-#### File - &lt;input type="file"&gt; (Untested at the moment)
+### File - &lt;input type="file"&gt; (Untested at the moment)
 ```php
 
 $f = $form->file ('field-name');
 $f->label = 'Upload File';
 ```
 
-#### Hidden - &lt;input type="hidden"&gt;
+### Hidden - &lt;input type="hidden"&gt;
 ```php
 
 $h = $form->hidden ('field-name');
 $h->value = 'some value';
 ```
 
-#### Html - &lt;div&gt; 
+### Html - &lt;div&gt; 
 ```php
 
 $h = $form->html ('field-name');
 $h->content = '<em>Custom Html Field</em>';
 ```
 
-#### Image - &lt;input type="file"&gt; (Untested at the moment)
+### Image - &lt;input type="file"&gt; (Untested at the moment)
 ```php
 
 $i = $form->image ('field-name');
 $i->label = 'Upload Image';
 ```
 
-#### Number - &lt;input type="number"&gt;
+### Number - &lt;input type="number"&gt;
 ```php
 
 $n = $form->number ('field-name');
 $n->label = 'Enter Your Lucky Number';
 ```
 
-#### Password - &lt;input type="password"&gt;
-##### Simple Password
+### Password - &lt;input type="password"&gt;
+Simple Password
 ```php
 
 $p = $form->password ('field-name');
 $p->label = 'Password';
 ```
 
-##### Password w/ Confirm
+Password w/ Confirm
 ```php
 
 $p = $form->password ('field-name');
@@ -319,8 +322,8 @@ $pc = $p->confirm();
 $pc->label = 'Password Confirm';
 ```
 
-#### Radio Buttons - &lt;input type="radio"&gt;
-##### Simple Radio Button
+### Radio Buttons - &lt;input type="radio"&gt;
+Simple Radio Button
 ```php
 
 $r1 = $form->radios ('field-name');
@@ -335,7 +338,7 @@ $r1->required();
 
 ```
 
-##### Radio Buttons with HTML
+Radio Buttons with HTML
 ```php
 
 $r2 = $form->radios ('field-name');
@@ -363,7 +366,7 @@ $r2->addField ($h2);
 
 ```
 
-#### Select - &lt;select&gt;
+### Select - &lt;select&gt;
 ```php
 
 $s = $form->select ('field-name');
@@ -377,8 +380,8 @@ $s->required();
 
 ```
 
-#### Submit Button - &lt;button&gt; or &lt;input type="submit"&gt;
-##### Rendered as &lt;button&gt;
+### Submit Button - &lt;button&gt; or &lt;input type="submit"&gt;
+Rendered as &lt;button&gt;
 ```php
 
 $s = $form->submitButton ('field-name');
@@ -387,7 +390,7 @@ $s->content = 'Press me';			// $s->label becomes the content, if the content pro
 
 ```
 
-##### Rendered as &lt;input type="submit"&gt;
+Rendered as &lt;input type="submit"&gt;
 ```php
 
 $s = $form->submitButton ('field-name');
@@ -397,13 +400,13 @@ $s->renderAsInput();
 
 ```
 
-#### Text - &lt;input type="text"&gt;
+### Text - &lt;input type="text"&gt;
 ```php
 
 $t = $form->text ('field-name');
 ```
 
-#### Textarea - &lt;textarea&gt;
+### Textarea - &lt;textarea&gt;
 ```php
 
 $ta = $form->textarea ('field-name');
