@@ -224,7 +224,7 @@ FORM_DEFAULT_CLASSES=false
 If you wish to change the default tailwind classes, you can change the config/laravel-forms.php file.  The default classes are stored under the tailwind section.  Additional styling options are set in there as well.
 
 ### Available Fields (More to come)
-#### Button - <button>
+#### Button - &lt;button&gt;
 ```php
 
 $b = $form->button ('field-name');
@@ -233,7 +233,7 @@ $b->content = 'This is what shows inside the button';
 
 ```
 
-#### Checkbox - <input type="checkbox">
+#### Checkbox - &lt;input type="checkbox"&gt;
 ```php
 
 $c = $form->checkbox ('field-name');
@@ -241,7 +241,7 @@ $c->value = 'Value when submitted';
 $c->label = 'Click me';
 ```
 
-#### Email - <input type="email">
+#### Email - &lt;input type="email"&gt;
 ##### Simple Email
 ```php
 
@@ -259,7 +259,7 @@ $ec->label = 'Confirm Email';
 
 ```
 
-#### Field Group - <div>
+#### Field Group - &lt;div&gt;
 This just wraps a group of fields.  It can have a label, if desired.
 ```php
 
@@ -267,42 +267,42 @@ $fg = $form->fieldGroup ('field-name');
 $fg->label = 'Contact Info';
 ```
 
-#### File - <input type="file"> (Untested at the moment)
+#### File - &lt;input type="file"&gt; (Untested at the moment)
 ```php
 
 $f = $form->file ('field-name');
 $f->label = 'Upload File';
 ```
 
-#### Hidden - <input type="hidden">
+#### Hidden - &lt;input type="hidden"&gt;
 ```php
 
 $h = $form->hidden ('field-name');
 $h->value = 'some value';
 ```
 
-#### Html - <div> 
+#### Html - &lt;div&gt; 
 ```php
 
 $h = $form->html ('field-name');
 $h->content = '<em>Custom Html Field</em>';
 ```
 
-#### Image - <input type="file"> (Untested at the moment)
+#### Image - &lt;input type="file"&gt; (Untested at the moment)
 ```php
 
 $i = $form->image ('field-name');
 $i->label = 'Upload Image';
 ```
 
-#### Number - <input type="number">
+#### Number - &lt;input type="number"&gt;
 ```php
 
 $n = $form->number ('field-name');
 $n->label = 'Enter Your Lucky Number';
 ```
 
-#### Password - <input type="password">
+#### Password - &lt;input type="password"&gt;
 ##### Simple Password
 ```php
 
@@ -319,14 +319,7 @@ $pc = $p->confirm();
 $pc->label = 'Password Confirm';
 ```
 
-#### Email - <button>
-```php
-
-$b = $form->email ('field-name');
-
-```
-
-#### Radio Buttons - <input type="radio">
+#### Radio Buttons - &lt;input type="radio"&gt;
 ##### Simple Radio Button
 ```php
 
@@ -370,7 +363,7 @@ $r2->addField ($h2);
 
 ```
 
-#### Select - <select>
+#### Select - &lt;select&gt;
 ```php
 
 $s = $form->select ('field-name');
@@ -384,8 +377,8 @@ $s->required();
 
 ```
 
-#### Submit Button - <button> or <input type="submit">
-##### Rendered as <button>
+#### Submit Button - &lt;button&gt; or &lt;input type="submit"&gt;
+##### Rendered as &lt;button&gt;
 ```php
 
 $s = $form->submitButton ('field-name');
@@ -394,7 +387,7 @@ $s->content = 'Press me';			// $s->label becomes the content, if the content pro
 
 ```
 
-##### Rendered as <input type="submit">
+##### Rendered as &lt;input type="submit"&gt;
 ```php
 
 $s = $form->submitButton ('field-name');
@@ -404,13 +397,13 @@ $s->renderAsInput();
 
 ```
 
-#### Text - <input type="text">
+#### Text - &lt;input type="text"&gt;
 ```php
 
 $t = $form->text ('field-name');
 ```
 
-#### Textarea - <textarea>
+#### Textarea - &lt;textarea&gt;
 ```php
 
 $ta = $form->textarea ('field-name');
