@@ -212,6 +212,7 @@ Route::post('/store', 'App\Http\Livewire\Example@storeFallback');
 ```
 
 ### Use with Tailwind CSS
+You must already have tailwind installed and configured.
 #### In the .env File
 ```
 FORM_THEME=tailwind
