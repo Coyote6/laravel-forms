@@ -8,11 +8,12 @@ Laravel Forms is just a simple class used to generate the html for forms and ass
 * Laravel Install
 
 ## Getting Started
-1. Install via composer:
+Install via composer:
 ```sh
-composer require Coyote6/laravel-forms
+composer require coyote6/laravel-forms
 ```
-2. Optional - Copy the config file to your config folder.
+
+Optional - Copy the config file to your config folder.
 ```sh
 php artisan vendor:publish --tag=laravel-forms
 ```
@@ -58,12 +59,12 @@ class HomeController extends Controller  {
 	
 	protected function form () {
 
-		static $form; 					// Create a singleton to keep form ids the same when validating.
+		static $form;						// Create a singleton to keep form ids the same when validating.
 		
 		if (is_null ($form)) {
 			$form = new Form();
-			$form->action ('/home');	// Default action is '#' so it will submit to the same page if not set.
-			$form->method ('POST');		// Available methods GET, POST, PUT, or DELETE
+			$form->action ('/home');		// Default action is '#' so it will submit to the same page if not set.
+			$form->method ('POST');			// Available methods GET, POST, PUT, or DELETE
 			
 			$form->email('email')	
 				->placeholder ('Please, Enter Your Email Address')
@@ -108,7 +109,7 @@ $form->text ('username')
 $form->email ('email')
 	->label ('Email')
 	->required()
-	->addRule ('max:255') 								// Add laravel validation rules individually
+	->addRule ('max:255')								// Add laravel validation rules individually
 	->addRule ('unique', 'users')
 	->confirm()											// Automatically adds extra confirm field and validates it.
 	->label ('Email Confirmation');						// Return value is the confirmation field.
@@ -117,7 +118,7 @@ $form->password ('password')
 	->label ('Password')
 	->required()
 	->addRules (['min:5', 'max:255'])
-	->removeRule ('max')  								// Remove rules by their name
+	->removeRule ('max')								// Remove rules by their name
 	->confirm()
 	->label ('Password Confirmation');
 
@@ -152,7 +153,7 @@ class Example extends Component {
 	
 	
 	protected function rules() {
-		return $this->form()->lwRules(); // lwRules() is an alias to livewireRules()
+		return $this->form()->lwRules();					// lwRules() is an alias to livewireRules()
 	}
     	
 	public function updated ($field) {
@@ -182,11 +183,11 @@ class Example extends Component {
 	
 	public function form () {
 		
-		static $form; 										// Create a singleton to keep form ids the same when validating.
+		static $form;										// Create a singleton to keep form ids the same when validating.
 		
 		if (is_null ($form)) {
 			
-			$form = new Form ($this); 						// Sets up the form as a Livewire form... 
+			$form = new Form ($this);						// Sets up the form as a Livewire form... 
 															// alternatively you can call $form->isLivewireForm($this);	
 											
 			$form->action ('/store')						// Optional fallback in case someone shuts off Javascript
@@ -201,13 +202,13 @@ class Example extends Component {
 			
 			$p = $form->password ('password')
 				->label ('Password')
-				->lwModel ()	 							// lwModel() & lw() are aliases to livewireModel() method
+				->lwModel()									// lwModel() & lw() are aliases to livewireModel() method
 															// If no value is passed, the name is used for the livewire model.
 				->addRule ('min:6');
 			
 			$pc = $p->confirm();
 			$pc->label ('Confirm Password')
-				->lwModelLazy ('passwordConfirmation'); 	// Use livewireModelLazy(), lwModelLazy(), lwLazy() to call wire:model.lazy 
+				->lwModelLazy ('passwordConfirmation');		// Use livewireModelLazy(), lwModelLazy(), lwLazy() to call wire:model.lazy 
 			
 			//
 			// Use getLivewireModel(), getLwModel(), getLw() methods to retrieve the Livewire model name.
@@ -318,14 +319,14 @@ The first which is mentioned above is to edit the config file and overriding the
 
 The other is to copy the files from the -/src/Resources/views/- directory (sorry haven't wrote the publish command yet, but will.) and move any of these files into -resources/views/- directory in your app. The package will check your directory for files and use it over the default files. Be sure to set caching to false on either your individual form/field or set the master caching to false in the config.  The template naming conventions are as follows:
 
-resources/views/forms.{$template}--{$element_id}.blade.php
-resources/views/forms.{$template}--{$element_name}.blade.php
-resources/views/forms.{$theme}.{$template}.blade.php
-resources/views/forms.{$template}--{$theme}.blade.php
-vendor/coyote6/laravel-forms/src/resources/views/forms.{$theme}.{$template}.blade.php
-vendor/coyote6/laravel-forms/src/resources/views/forms.{$template}--{$theme}.blade.php
-resources/views/forms.{$template}.blade.php
-vendor/coyote6/laravel-forms/src/resources/views/forms.{$template}.blade.php
+-resources/views/forms.{$template}--{$element_id}.blade.php-
+-resources/views/forms.{$template}--{$element_name}.blade.php-
+-resources/views/forms.{$theme}.{$template}.blade.php-
+-resources/views/forms.{$template}--{$theme}.blade.php-
+-vendor/coyote6/laravel-forms/src/resources/views/forms.{$theme}.{$template}.blade.php-
+-vendor/coyote6/laravel-forms/src/resources/views/forms.{$template}--{$theme}.blade.php-
+-resources/views/forms.{$template}.blade.php-
+-vendor/coyote6/laravel-forms/src/resources/views/forms.{$template}.blade.php-
 
 You can merge your custom classes to any of the attribute variables in the templates:
 ```php
