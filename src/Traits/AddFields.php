@@ -31,10 +31,17 @@ trait AddFields {
 
 
 	public function addField (Field $field) {
-		if ($field instanceof Radio) {
+
+		if (
+			$field instanceof Radio &&
+			(!$this instanceof Radios || !$this instanceof FieldGroup)
+		) {
 			$fieldGroup = Radios::get($field->name);
 			$fieldGroup->addField($field);
 			$fieldGroup->parent = $this;
+			$fieldGroup->cache = $this->cache;
+			$fieldGroup->id = Form::uniqueId ($fieldGroup->parent->id, $fieldGroup->name);
+			$fieldGroup->theme = $this->theme;
 			if ($fieldGroup->parent instanceof Form) {
 				$fieldGroup->form = $fieldGroup->parent;
 			}
@@ -44,19 +51,34 @@ trait AddFields {
 			$this->fields[$fieldGroup->name] = $fieldGroup;
 		}
 		else {
+			
+			$field->cache = $this->cache;
 			$field->parent = $this;
+			$field->id = Form::uniqueId ($field->parent->id, $field->name);
+			$field->theme = $this->theme;
 			if ($field->parent instanceof Form) {
 				$field->form = $field->parent;
 			}
 			else {
 				$field->form = $field->parent->form;
 			}
-			$this->fields[$field->name] = $field;
+			if (!$field instanceof Radio) {
+				$this->fields[$field->name] = $field;
+
+			}
+			else {
+				$this->fields[$field->name . '--' . $field->value] = $field;
+			}
 		}
+		return $this;
 	}
+	
 	
 	public function addFieldGroup (FieldGroup $fieldGroup) {
 		$fieldGroup->parent = $this;
+		$fieldGroup->id = Form::uniqueId ($fieldGroup->parent->id, $fieldGroup->name);
+		$fieldGroup->cache = $this->cache;
+		$fieldGroup->theme = $this->theme;
 		if ($fieldGroup->parent instanceof Form) {
 			$fieldGroup->form = $fieldGroup->parent;
 		}
@@ -64,7 +86,9 @@ trait AddFields {
 			$fieldGroup->form = $fieldGroup->parent->form;
 		}
 		$this->fields[$fieldGroup->name] = $fieldGroup;
+		return $this;
 	}
+	
 	
 	public function button ($name) {
 		$field = new Button ($name);
@@ -185,6 +209,7 @@ trait AddFields {
 		if (isset ($this->fields[$name])) {
 			return $this->fields[$name];
 		}
+		return false;
 	}
 	
 }

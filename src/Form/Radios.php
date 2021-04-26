@@ -23,6 +23,9 @@ class Radios extends FieldGroup {
 
 
 	protected $type = 'radios';
+	protected $template = 'radios';
+	
+	public $value;
 	
 	
 	protected function defaultRules() {
@@ -36,9 +39,10 @@ class Radios extends FieldGroup {
 	}
 	
 	
-	public function addField (Field $field) {
-		$this->fields[$field->name . '--' . $field->value] = $field;
-	}
+#	public function addField (Field $field) {
+#		$this->fields[$field->name . '--' . $field->value] = $field;
+#		return $this;
+#	}
 	
 	
 	public static function get ($name) {
@@ -50,6 +54,12 @@ class Radios extends FieldGroup {
 			$allRadios[$name . static::NAME_EXTENSION] = new Radios($name . static::NAME_EXTENSION);
 		}
 		return $allRadios[$name . static::NAME_EXTENSION];
+	}
+	
+	
+	public function value ($value) {
+		$this->value = $value;
+		return $this;
 	}
 	
 	
@@ -65,21 +75,31 @@ class Radios extends FieldGroup {
 	
 	
 	public function addOptions (array $options) {
-		foreach ($options as $value => $label) {
+		foreach ($options as $value => $label) {	
+			
 			$newName = $this->name . '--' . $value;
 			$radio = new Radio ($this->name);
+
 			$radio->label = $label;
 			$radio->value = $value;
+			
+			$radio->cache = $this->cache;
+			$radio->theme = $this->theme;
+			$radio->parent = $this;
+			$radio->id = Form::uniqueId($radio->parent->id, $radio->name);
+			
 			$this->fields[$newName] = $radio;
 		}
+		return $this;
 	}
+	
 	
 	public function setOptions (array $options) {
-		$this->addOptions ($options);
+		return $this->addOptions ($options);
 	}
 	
 	
-	public function prerender () {
+	protected function prerender () {
 
 		$val = old ($this->name, $this->value);
 		foreach ($this->sortFields() as $f) { 

@@ -18,12 +18,18 @@ class Option {
 	
 	protected $template = 'option';
 	
+	public $id = 'option';
+	
 	public $value;
 	public $label = false;
+	public $displayId = false;
 	
 	
 	protected function prerender () {
 		$this->addAttribute ('value', $this->value);
+		if ($this->displayId === true) {
+			$this->addAttribute ('id', $this->id);
+		}
 	}	
 	
 	

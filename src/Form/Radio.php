@@ -10,7 +10,7 @@ use Coyote6\LaravelForms\Form\Input;
 class Radio extends Input {
 	
 	protected $type = 'radio';
-	protected $template = 'input--radio';
+	protected $template = 'radio';
 	
 		
 	protected function defaultRules() {
@@ -27,8 +27,8 @@ class Radio extends Input {
 			$this->addAttribute('checked');
 		}
 		
-		$this->addAttribute ('id', $this->name . '--' . $this->value);
-		$this->labelTag->addAttribute ('for', $this->name . '--' . $this->value);		
+		$this->addAttribute ('id', $this->id . '--' . $this->value);
+		$this->labelTag->addAttribute ('for', $this->id . '--' . $this->value);		
 
 	}
 		

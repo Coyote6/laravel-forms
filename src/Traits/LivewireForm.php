@@ -18,15 +18,29 @@ trait LivewireForm {
 	}
 	
 	
-	public function isLivewireForm ($component) {
+	public function livewireForm ($component) {
 		if ($this->isComponent ($component)) {
 			$this->livewireComponent = $component;
 		}
+		return $this;
 	}
 	
 	
-	public function isLwForm ($component) {
-		$this->isLivewireForm();
+	public function lwForm ($component) {
+		return $this->isLivewireForm();
+	}
+	
+	
+	public function isLivewireForm () {
+		if (!is_null ($this->livewireComponent)) {
+			return true;
+		}
+		return false;
+	}
+	
+	
+	public function isLwForm () {
+		return $this->isLivewireForm();	
 	}
 	
 }

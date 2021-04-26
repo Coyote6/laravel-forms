@@ -1,49 +1,30 @@
 <?php
 
-return [
-
-    /*
-    |--------------------------------------------------------------------------
-    | Form Theme
-    |--------------------------------------------------------------------------
-    |
-    | This value sets the default classes that are added to forms and their fields.
-    | Optional values are null or 'tailwind'.
-    |
-    |	Future values: 'coyote6', 'drupal', 'bootstap' 
-    |
-    */
-
-    'theme' => env('FORM_THEME', null),
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Display Containers
-    |--------------------------------------------------------------------------
-    |
-    | Determines whether to show the element tags on all forms, unless
-    |	overriden on the individual form.
-    |
-    |	Available Values = true, false, 'auto'
-    |
-    */
-    'display--colon-tag' => 'auto',
-    'display--required-tag' => 'auto',
-    'display--form-item-tag' => 'auto',
-    'display--label-container-tag' => 'auto',
-    'display--label-tag' => 'auto',
-    'display--label-text-tag' => 'auto',									// Adds an additional span tag inside the label for styling purposes.
-    																											// Off by default except radio buttons and checkboxes.
-    																											// Use the setting display--error-message-container-tag => true to always display
-    																											// or $field->errorMessageContainerTag()->displayElement() to display on individual field.
-    'display--field-container-tag' => 'auto',
-    'display--error-message-container-tag' => 'auto',			// Off by default. Use the setting display--error-message-container-tag => true to always display
-    																											// or $field->errorMessageContainerTag()->displayElement() to display on individual field.
-		'display--error-icon-container' => 'auto',
-		'display--error-icon' => 'auto',
-		    
-    /*
+return [	
+	
+	/*
+	|--------------------------------------------------------------------------
+	| Cache
+	|--------------------------------------------------------------------------
+	|
+	| Cache the form templates to skip checking folders for custom templates.
+	| If turned on, once a template is found it is stored in the cache for that
+	| field and form.  To release the cache either set the field or form's cache
+	| property to false. $form->cache = false, $field->cache = false or set this
+	| config to false to refresh all forms.
+	|
+	| If double check is set to true it will double check the existance of a
+	| cached template, before attempting to output the form or field. Set to
+	| false to save time checking its existance.
+	|
+	| Available Values = true or false
+	|
+	*/
+	'cache' => env('FORM_CACHE', true),
+	'cache--double-check' => true,
+	
+	
+	/*
     |--------------------------------------------------------------------------
     | Default Classes 
     |--------------------------------------------------------------------------
@@ -51,156 +32,223 @@ return [
     | Sets the default classes for form items, labels, inputs, and classes. 
     |
     */
-    'default-classes' => env('FORM_DEFAULT_CLASSES', true),		
-    'classes--colon' => 'colon',
-    'classes--required' => 'required',
-        
-     /*
-    |--------------------------------------------------------------------------
-    | Default Error Classes
-    |--------------------------------------------------------------------------
-    |
-    | The default error classes to use when an error occurs.  These are
-    | overridden when a theme is selected.
-    |
-    */
-    'classes--error--form-item' => 'has-error has-error--form-item',
+    'default-classes' => env('FORM_DEFAULT_CLASSES', true),	
+    
+	/*
+	|--------------------------------------------------------------------------
+	| Display Elements
+	|--------------------------------------------------------------------------
+	|
+	| Determines whether to show the element tags on all forms, unless
+	| overriden on the individual form.
+	|
+	| Available Values = true or false
+	|
+	*/
+	'display--colon-tag' => false,
+	'display--required-tag' => true,
+	'display--error-icon' => true,
+	
+		    
+	/*
+	|--------------------------------------------------------------------------
+	| Default Classes 
+	|--------------------------------------------------------------------------
+	|
+	| Sets the default classes for form items, labels, inputs, and classes. 
+	|
+	|
+	*/
+	'classes--form' => 'm-10 p-10 border border-gray-300 rounded-md',
+	'classes--colon' => '',
+	'classes--required' => 'text-red-500',
+	
+	//
+	// Append '--' and the field type to the end to target specific types of fields:
+	//
+	//		'classes--form-item--text' => 'will add classes to the form item tag on all text fields'
+	//		'classes--field--select' => 'will add classes to the select tag on all select fields'
+	//
+	
+	//
+	// Form Item Containers
+	//
+	'classes--form-item' => 'mt-6',
+	'classes--form-item--checkbox' => 'relative',
+	'classes--form-item--radio' => 'relative',
+	'classes--form-item--field-group' => 'relative',
+	'classes--form-item--radios' => 'relative',
+	'classes--form-item--file' => 'flex items-center',
+	'classes--form-item--image' => 'flex items-center',
+	'classes--form-item--textarea' => 'relative',
+	
+	//
+	// Label Containers
+	//
+	'classes--label-container' => '',
+	
+	//
+	// Labels
+	//
+	'classes--label' => 'text-cool-gray-700 text-sm leading-5 font-medium focus:outline-none focus:text-cool-gray-800 focus:underline transition duration-150 ease-in-out',
+	
+	'classes--label--date' => 'font-semibold',
+	'classes--label--email' => 'font-semibold',
+	'classes--label--number' => 'font-semibold',
+	'classes--label--password' => 'font-semibold',
+	'classes--label--text' => 'font-semibold',
+	'classes--label--textarea' => 'font-semibold',
+	'classes--label--file' => 'font-semibold cursor-pointer py-2 px-3 border border-gray-300 rounded-md hover:text-gray-500 active:bg-gray-50 active:text-gray-800',
+	'classes--label--image' => 'font-semibold cursor-pointer py-2 px-3 border border-gray-300 rounded-md hover:text-gray-500 active:bg-gray-50 active:text-gray-800',
+	'classes--label--html' => 'font-semibold',
+	'classes--label--button' => 'font-semibold',
+	'classes--label--submit' => 'font-semibold',
+	'classes--label--checkbox' => 'flex items-center',
+	'classes--label--select' => 'font-semibold',
+	'classes--label--radio' => 'flex items-center',
+	'classes--label--radios' => 'font-semibold',
+	'classes--label--field-group' => 'font-semibold',
+		
+	//
+	// Label Texts - <span> inside of the <label> the wraps the text
+	//
+	'classes--label-text' => '',
+	
+	'classes--label-text--checkbox' => 'ml-2',
+	'classes--label-text--radio' => 'ml-2',
+	
+	//
+	// Field Containers
+	//
+	'classes--field-container' => '',	
+	
+	'classes--field-container--email' => 'relative mt-1 rounded-md shadow-sm',
+	'classes--field-container--date' => 'relative mt-1 rounded-md shadow-sm',
+	'classes--field-container--number' => 'relative mt-1 rounded-md shadow-sm',
+	'classes--field-container--password' => 'relative mt-1 rounded-md shadow-sm',
+	'classes--field-container--text' => 'relative mt-1 rounded-md shadow-sm',
+	'classes--field-container--textarea' => 'relative mt-1 rounded-md shadow-sm',
+	'classes--field-container--select' => 'relative mt-1 rounded-md shadow-sm',
+	'classes--field-container--button' => 'flex space-x-2',
+	'classes--field-container--submit' => 'flex space-x-2',
+	
+	//
+	// Fields
+	//
+	'classes--field' => '',
+	
+	'classes--field--date' => 'form-input appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:shadow-outline-blue focus:border-blue-300 transition duration-150 ease-in-out sm:text-sm sm:leading-5',
+	'classes--field--email' => 'form-input appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:shadow-outline-blue focus:border-blue-300 transition duration-150 ease-in-out sm:text-sm sm:leading-5',
+	'classes--field--number' => 'form-input appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:shadow-outline-blue focus:border-blue-300 transition duration-150 ease-in-out sm:text-sm sm:leading-5',
+	'classes--field--password' => 'form-input appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:shadow-outline-blue focus:border-blue-300 transition duration-150 ease-in-out sm:text-sm sm:leading-5',
+	'classes--field--text' => 'form-input appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:shadow-outline-blue focus:border-blue-300 transition duration-150 ease-in-out sm:text-sm sm:leading-5',
+	'classes--field--textarea' => 'form-textarea appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:shadow-outline-blue focus:border-blue-300 transition duration-150 ease-in-out sm:text-sm sm:leading-5',
+	'classes--field--select' => 'form-select block mt-1 w-full',
+	'classes--field--checkbox' => 'form-checkbox',
+	'classes--field--radio' => 'form-radio',
+	'classes--field--file' => 'form-input',
+	'classes--field--image' => 'form-input',
+	'classes--field--button' => 'form-input',
+	
+	//
+	// Errors
+	//
+	'classes--error--form-item' => 'has-error has-error--form-item',
     'classes--error--label-container' => 'has-error has-error--label-container',
-    'classes--error--label' => 'error error--label',
+    'classes--error--label' => 'error error--label text-red-700',
     'classes--error--field-container' => 'has-error has-error--field-container',
-    'classes--error--field' => 'error error--label',
+    
+    'classes--error--field'=> 'error error--field text-red-700',
+    'classes--error--field--date' => 'focus:border-red-300 focus:shadow-outline-red border border-red-700',
+    'classes--error--field--email' => 'focus:border-red-300 focus:shadow-outline-red border border-red-700',
+    'classes--error--field--number' => 'focus:border-red-300 focus:shadow-outline-red border border-red-700',
+    'classes--error--field--password' => 'focus:border-red-300 focus:shadow-outline-red border border-red-700',
+    'classes--error--field--text' => 'focus:border-red-300 focus:shadow-outline-red border border-red-700',
+	'classes--error--field--textarea' => 'focus:border-red-300 focus:shadow-outline-red border border-red-700',
+	'classes--error--field--select' => 'focus:border-red-300 focus:shadow-outline-red border border-red-700',
+	
+	'classes--error--icon-container' => 'absolute inset-y-0 right-0 pr-3 flex pointer-events-none',
+	
+	'classes--error--icon-container--date' => 'items-center',
+	'classes--error--icon-container--email' => 'items-center',
+	'classes--error--icon-container--number' => 'items-center',
+	'classes--error--icon-container--password' => 'items-center',
+	'classes--error--icon-container--text' => 'items-center',
+	'classes--error--icon-container--textarea' => 'items-center',
+	'classes--error--icon-container--select' => 'items-center',
+	'classes--error--icon-container--checkbox' => 'items-center',
+	'classes--error--icon-container--radios' => 'items-start mt-1',
+	'classes--error--icon-container--file' => 'items-center',
+	'classes--error--icon-container--image' => 'items-center',
+	'classes--error--icon-container--button' => 'items-center',
+	'classes--error--icon-container--field-group' => 'items-start mt-1',
+
+    'classes--error--icon' => 'h-5 w-5 text-red-500',
+	
     'classes--error--message-container' => 'has-error has-error--message-container',
-    'classes--error--message' => 'error error--message',
+    'classes--error--message' => 'error error--message text-xs text-red-700 block',
     
-    
+    'classes--error--message--date' => 'mt-2',
+    'classes--error--message--email' => 'mt-2',
+    'classes--error--message--number' => 'mt-2',
+    'classes--error--message--password' => 'mt-2',
+    'classes--error--message--text' => 'mt-2',
+    'classes--error--message--textarea' => 'mt-2',
+    'classes--error--message--select' => 'mt-2',
+
+   
+	// Remove these classes on error
+	'remove-classes--error--label' => 'text-cool-gray-700',
+	'remove-classes--error--field' => 'border-gray-300',
+	
+	'remove-classes--error--field--date' => 'focus:border-blue-300 focus:shadow-outline-blue',
+	'remove-classes--error--field--email' => 'focus:border-blue-300 focus:shadow-outline-blue',
+	'remove-classes--error--field--number' => 'focus:border-blue-300 focus:shadow-outline-blue',
+	'remove-classes--error--field--password' => 'focus:border-blue-300 focus:shadow-outline-blue',
+	'remove-classes--error--field--text' => 'focus:border-blue-300 focus:shadow-outline-blue',
+	'remove-classes--error--field--textarea' => 'focus:border-blue-300 focus:shadow-outline-blue',
+	'remove-classes--error--field--select' => 'focus:border-blue-300 focus:shadow-outline-blue',
+
+             
     /*
     |--------------------------------------------------------------------------
-    | Tailwind CSS Classes 
+    | Custom Theme Classes 
     |--------------------------------------------------------------------------
     |
-    | Sets the default Tailwind CSS classes for form items, labels, inputs, and classes. 
+    | Create custom themes for forms and their fields. 
+    |
+    | To Use:
+    |	1. First create the theme name you wish to use:
+    |			
+    |			your-theme-name
+    |
+    |
+    |	2. Second add your theme name followed by '--' and any 'classes' or 'remove-classes' config
+    |		you want to add your custom css classes to:
+    |
+    |			'your-theme-name--classes-form' => 'custom classes to add to form elements'
+    |			'your-theme-name--classes-lavel-email' => 'custom classes to add to email elements'
+    |
+    |
+    |	3. Now when creating your form or field, set the theme property and those classes will
+    |		be applied instead of the default ones:
+    |
+    |			$form = new Form();
+    |			$form->theme = 'your-theme-name';
+    |			$field = $form->text();
+    |			$field->theme = 'your-theme-name';
+    |
+    |	4. You can also override the file template for that form or field by copying the blade
+    |		template into your resources/views/ directory using one of the following conventions:
+    |
+    |			resources/views/forms/{$your_theme_name}/{$template}.blade.php
+	|			resources/views/forms/{$template}--{$your_theme_name}.blade.php
+    |
+    |			
     |
     */
-    'tailwind--classes--required' => 'text-red-500',
     
-    'tailwind--classes--form' => 'm-10 p-10 border border-gray-300 rounded-md',
-    
-    'tailwind--classes--form-item' => 'mt-6',						// Generic classes that will be applied to all form items
-    
-    'tailwind--classes--form-item--text' => '',
-    'tailwind--classes--form-item--textarea' => '',
-    'tailwind--classes--form-item--select' => '',
-    'tailwind--classes--form-item--checkbox' => 'relative',
-    'tailwind--classes--form-item--radio' => 'relative',
-    'tailwind--classes--form-item--file' => '',
-    'tailwind--classes--form-item--image' => '',
-    'tailwind--classes--form-item--button' => '',
-    'tailwind--classes--form-item--html' => '',
-    'tailwind--classes--form-item--field-group' => 'relative',
-    
-    'tailwind--classes--label-container' => '',						// Generic classes that will be applied to all label containers
-    																											// Display shutoff by default in Tailwind. Use the setting display--label-container-tag => true to always display
-    																											// or $field->labelContainerTag()->displayElement() to display on individual field.
-    																											
-    'tailwind--classes--label-container--text' => '',
-    'tailwind--classes--label-container--textarea' => '',
-    'tailwind--classes--label-container--select' => '',
-    'tailwind--classes--label-container--checkbox' => '',
-    'tailwind--classes--label-container--radio' => '',
-    'tailwind--classes--label-container--file' => '',
-    'tailwind--classes--label-container--image' => '',
-    'tailwind--classes--label-container--button' => '',
-    'tailwind--classes--label-container--html' => '',
-    'tailwind--classes--label-container--field-group' => '',
-    
-    'tailwind--classes--label' => 'text-gray-700',					// Generic classes that will be applied to all labels
-    
-    'tailwind--classes--label--text' => 'font-semibold',
-    'tailwind--classes--label--textarea' => 'font-semibold',
-    'tailwind--classes--label--select' => 'font-semibold',
-    'tailwind--classes--label--checkbox' => 'flex items-center',
-    'tailwind--classes--label--radio' => 'flex items-center',
-    'tailwind--classes--label--file' => 'font-semibold',
-    'tailwind--classes--label--image' => 'font-semibold',
-    'tailwind--classes--label--button' => 'font-semibold',
-    'tailwind--classes--label--html' => 'font-semibold',
-    'tailwind--classes--label--field-group' => 'font-semibold',
-    
-    'tailwind--classes--label-text' => '',								// Generic classes that will be applied to all label text classes.
-    																											// Depending of field type the display maybe shutoff in Tailwind. Use the setting display--field-container-tag => true to always display
-    																											// or $field->fieldContainerTag()->displayElement() to display on individual field.
-    																											
-    'tailwind--classes--label-text--checkbox' => 'ml-2',
-    'tailwind--classes--label-text--radio' => 'ml-2',
-    
-    																											
-    'tailwind--classes--field-container' => '',						// Generic classes that will be applied to all field containers
-    																											// Depending of field type the display maybe shutoff in Tailwind. Use the setting display--field-container-tag => true to always display
-    																											// or $field->fieldContainerTag()->displayElement() to display on individual field.
-
-		'tailwind--classes--field-container--text' => 'relative mt-1 rounded-md shadow-sm',
-    'tailwind--classes--field-container--textarea' => 'relative mt-1 rounded-md shadow-sm',
-    'tailwind--classes--field-container--select' => 'relative mt-1 rounded-md shadow-sm',
-    'tailwind--classes--field-container--checkbox' => '',
-    'tailwind--classes--field-container--radio' => '',
-    'tailwind--classes--field-container--file' => '',
-    'tailwind--classes--field-container--image' => '',
-    'tailwind--classes--field-container--button' => '',
-    'tailwind--classes--field-container--html' => '',
-    'tailwind--classes--field-container--field-group' => '',
-
-    'tailwind--classes--field' => '',											// Generic classes that will be applied to all fields.
-    'tailwind--classes--field--text' => 'form-input appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:shadow-outline-blue focus:border-blue-300 transition duration-150 ease-in-out sm:text-sm sm:leading-5',
-    'tailwind--classes--field--textarea' => 'form-textarea appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:shadow-outline-blue focus:border-blue-300 transition duration-150 ease-in-out sm:text-sm sm:leading-5',
-    'tailwind--classes--field--select' => 'form-select block mt-1 w-full',
-    'tailwind--classes--field--checkbox' => 'form-checkbox',
-    'tailwind--classes--field--radio' => 'form-radio',
-    'tailwind--classes--field--file' => 'form-input',
-    'tailwind--classes--field--image' => 'form-input',
-    'tailwind--classes--field--button' => 'form-input',
-    'tailwind--classes--field--html' => '',
-    'tailwind--classes--field--field-group' => '',
-    
-    'tailwind--classes--error-icon-container' => 'absolute inset-y-0 right-0 pr-3 flex pointer-events-none',
-
-    'tailwind--classes--error-icon-container--text' => 'items-center',
-    'tailwind--classes--error-icon-container--textarea' => 'items-center',
-    'tailwind--classes--error-icon-container--select' => 'items-center',
-    'tailwind--classes--error-icon-container--checkbox' => 'items-center',
-    'tailwind--classes--error-icon-container--file' => 'items-center',
-    'tailwind--classes--error-icon-container--image' => 'items-center',
-    'tailwind--classes--error-icon-container--button' => 'items-center',
-    'tailwind--classes--error-icon-container--field-group' => 'items-start mt-1',
-    
-    'tailwind--classes--error-icon' => 'h-5 w-5 text-red-500',
-
-    'tailwind--classes--error-icon--text' => '',
-    'tailwind--classes--error-icon--textarea' => '',
-    'tailwind--classes--error-icon--select' => '',
-    'tailwind--classes--error-icon--checkbox' => '',
-    'tailwind--classes--error-icon--file' => '',
-    'tailwind--classes--error-icon--image' => '',
-    'tailwind--classes--error-icon--button' => '',
-    'tailwind--classes--error-icon--field-group' => '',
-   
-    'tailwind--classes--error--form-item' => 'has-error has-error--form-item',
-    'tailwind--classes--error--label-container' => '',
-    'tailwind--classes--error--label' => 'text-red-700',
-    'tailwind--classes--error--field-container' => '',
-    'tailwind--classes--error--field' => 'border border-red-700 text-red-700',
-    
-    'tailwind--classes--error--field--text' => 'focus:border-red-300 focus:shadow-outline-red',
-    'tailwind--classes--error--field--textarea' => 'focus:border-red-300 focus:shadow-outline-red',
-    'tailwind--classes--error--field--select' => 'focus:border-red-300 focus:shadow-outline-red',
-    
-    'tailwind--remove-classes--error--field' => 'border-gray-300',
-
-		'tailwind--remove-classes--error--field--text' => 'focus:border-blue-300 focus:shadow-outline-blue',
-    'tailwind--remove-classes--error--field--textarea' => 'focus:border-blue-300 focus:shadow-outline-blue',
-    'tailwind--remove-classes--error--field--select' => 'focus:border-blue-300 focus:shadow-outline-blue',
-        
-    'tailwind--classes--error--message-container' => '',		// Display shutoff by default in Tailwind. Use the setting display--error-message-container-tag => true to always display
-    																												// or $field->errorMessageContainerTag()->displayElement() to display on individual field.
-    'tailwind--classes--error--message' => 'mt-2 text-xs text-red-700 block',
+    'minimal--classes--form' => 'form',
 
 ];
+

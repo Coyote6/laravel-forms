@@ -13,6 +13,7 @@ trait GroupedWithFormButtons {
 
 	public function groupWithButtons () {
 		$this->groupWithButtons = true;
+		return $this;
 	}
 	
 	public function isGroupedWithButtons () {

@@ -4,6 +4,7 @@
 namespace Coyote6\LaravelForms\Form;
 
 
+use Coyote6\LaravelForms\Form\FieldItem;
 use Coyote6\LaravelForms\Traits\Attributes;
 use Coyote6\LaravelForms\Traits\AddFields;
 use Coyote6\LaravelForms\Traits\LivewireRules;
@@ -13,6 +14,7 @@ use Coyote6\LaravelForms\Traits\Theme;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\MessageBag;
 use Illuminate\Support\ViewErrorBag;
 
 class Form {
@@ -28,34 +30,137 @@ class Form {
 	protected $groupSubmitButtons = true;
 	protected $template = 'form';
 	
+	protected $errorMessageContainerTag;
+	protected $errorMessageTag;
 	
 	public $submitButton = true;
-	public $action = '/';
+	public $action = '#';
+	
+	public $renderedFields = [];
+	public $id;
 	
 	
-	public function __construct ($object = null) {
+	public function __construct ($options = null) {
+
+		$this->setDefaultId();	
 		
-		if (is_object ($object)) {
-			if ($this->isComponent ($object)) {
-				$this->isLivewireForm ($object);
+		if (is_object ($options)) {
+			
+			// Livewire
+			if ($this->isComponent ($options)) {
+				$this->livewireForm ($options);
+			}
+			
+			// ToDo: Model
+			
+		}
+		else if (is_array ($options)) {
+			
+			// Manually set the form id.
+			if (isset ($options['id'])) {
+				$this->id = $options['id'];
+			}
+			
+			// Livewire
+			if (isset ($options['livewire']) && is_object ($options['livewire']) && $this->isComponent ($options['livewire'])) {
+				$this->livewireForm ($options['livewire']);
+			}
+			else if (isset ($options['lw']) && is_object ($options['lw']) && $this->isComponent ($options['lw'])) {
+				$this->livewireForm ($options['lw']);
+			}
+			
+			// Cache
+			if (isset ($options['cache']) && is_bool ($options['cache'])) {
+				$this->cache = $options['cache'];
+			}
+			
+			// Theme
+			if (isset ($options['theme']) && is_string ($options['theme']) && $options['theme'] != '') {
+				$this->theme = $options['theme'];
+			}
+			
+		}
+		
+		$this->errorMessageContainerTag = new FieldItem ($this, 'form--error-message-container');
+		$this->errorMessageTag = new FieldItem ($this, 'form--error-message');
+		$this->initTheme('form');
+		
+		
+	}
+	
+	
+	public function setDefaultId () {
+		
+		$class = class_basename (__CLASS__);
+		$function = null;
+		
+		$backtrace = debug_backtrace();
+		if (isset ($backtrace[2])) {
+			if (isset ($backtrace[2]['class'])) {
+				$class = class_basename ($backtrace[2]['class']);
+			}
+			if (isset ($backtrace[2]['function'])) {
+				$function = $backtrace[2]['function'];
 			}
 		}
 		
-		$this->initTheme('form');
+		$id = $this->formatIdStr ($class);
+		if (is_string ($function) && $function != '') {
+			$id .= '--' . $this->formatIdStr ($function);
+		}
+		
+		$this->id = $id;
+		
+		return $this;
+		
+	}
+	
+	
+	public function formatIdStr (string $str) {
+		preg_match_all ('!([A-Z][A-Z0-9]*(?=$|[A-Z][a-z0-9])|[A-Za-z][a-z0-9]+)!', $str, $matches);
+		$ret = $matches[0];
+		foreach ($ret as &$match) {
+		    $match = $match == strtoupper ($match) ? strtolower($match) : lcfirst($match);
+		}
+		return implode('-', $ret);
 	}
 
 	
+	public static function uniqueId (string $parentId, string $name) {
+		
+		static $ids;
+
+		$id = $parentId . '--' . $name;
+		$count = 1;
+		while (isset ($ids[$id])) {
+			$id = $parentId . '--' . $name . '--' . $count;
+			$count++; 
+		}
+
+		$ids[$id] = $id;
+		return $id;
+		
+	}
 	
+
+	public function action (string $action) {
+		$this->action = $action;
+		return $this;
+	}
+	
+		
 	public function method (string $method) {
 		$method = strtoupper ($method);
 		if (in_array ($method, $this->methodOptions)) {
 			$this->method = $method;
 		}
+		return $this;
 	}
 	
 	
 	public function ungroupSubmitButtons() {
 		$this->groupSubmitButtons = false;
+		return $this;
 	}
 	
 	
@@ -99,6 +204,41 @@ class Form {
 	}
 	
 	
+	protected function setError ($field) {
+		$field->formItemTag()->setError();
+		$field->labelContainerTag()->setError();
+		$field->labelTag()->setError();
+		$field->fieldContainerTag()->setError();
+		$field->setError();
+		$field->errorMessageContainerTag()->setError();
+		$field->errorMessageTag()->setError();
+	}
+	
+	
+	
+#	public function throwFieldError (string $fieldName, string $errorMessage) {
+#		if ($this->getField ($fieldName)) {
+		//	throw ValidationException::withMessages([$fieldName => $errorMessage]);
+#		}
+#	}
+	
+	
+	public function addFieldError (string $fieldName, string $errorMessage) {
+		if ($this->getField ($fieldName)) {
+			if (is_null ($this->livewireComponent)) {
+				$app = app();
+				$errors = $app[MessageBag::class];
+			}
+			else {
+				$errors = $this->livewireComponent->getErrorBag();
+			}
+			$errors->add ($fieldName, $errorMessage);
+			#$this->setError ($this->getField ($fieldName));
+		}
+		return $this;
+	}
+	
+	
 	protected function flattenFields ($fields) {
 		$flatten = [];
 		foreach ($fields as $f) {
@@ -130,21 +270,17 @@ class Form {
 			return [$item['name'] => $item['field']];
 		});
 	}
-
 	
-	protected function setError ($field) {
-		$field->formItemTag()->setError();
-		$field->labelContainerTag()->setError();
-		$field->labelTag()->setError();
-		$field->fieldContainerTag()->setError();
-		$field->setError();
-		$field->errorMessageContainerTag()->setError();
-		$field->errorMessageTag()->setError();
+	
+	public function renderedField (string $field) {
+		$this->renderedFields[$field] = $field;
 	}
 	
 	
-	
 	public function templateVariables () {
+		
+		// Add the id to the form.
+		$this->addAttribute('id', $this->id);
 	
 		// See if there is a file field and/or a submit button,
 		// and add the error classes for any with errors.
@@ -199,8 +335,8 @@ class Form {
 			// Check for confirmation fields and require them if the primary field
 			// is required.
 			//
-			
-			if (is_callable ($f, 'isRequired') && $f->isRequired() && is_callable ($f, 'rules')) {
+			if (is_callable ([$f, 'isRequired']) && $f->isRequired() && is_callable ([$f, 'rules'])) {
+
 				if (key_exists ('confirmed', $f->rules())) {
 					$confirmFieldName = $f->name . '_confirmation';
 					if (isset ($this->fields[$confirmFieldName])) {
@@ -226,11 +362,15 @@ class Form {
 			}
 
 		}
-			
+		
+		if ($this->hasError ('form')) {
+			$this->errorMessageContainerTag->setError();
+			$this->errorMessageTag->setError();
+		}
+		
 		// Add submit button if set to true and one isn't present.
 		if ($this->submitButton && count ($submitButtons) == 0) {
 			$b = $this->submitButton ('submit');
-			$b->renderAsButton();
 			$b->value = 'Submit';
 			$submitButtons[] = 'submit';
 		}
@@ -238,25 +378,23 @@ class Form {
 		$sortedFields = $this->sortFields();
 		
 		// Render all non-hidden fields.
-		ob_start();
-		foreach ($sortedFields as $f) { 
+		$fields = [];
+		foreach ($sortedFields as $key => $f) { 
 			if ($f instanceof Hidden || ($this->groupSubmitButtons && in_array ($f->name, $submitButtons)) || $f->isGroupedWithButtons()) {
 				continue;
 			}
 			else {
-				$f->render();
+				$fields[$key] = $f;
 			}
 		}
-		$fields = ob_get_clean();
 		
 		// Render all hidden fields.
-		ob_start();
-		foreach ($sortedFields as $f) { 
+		$hidden = [];
+		foreach ($sortedFields as $key => $f) { 
 			if ($f instanceof Hidden || (in_array ($f->name, $submitButtons) && $this->groupSubmitButtons) || $f->isGroupedWithButtons()) {
-				$f->render();
+				$hidden[$key] = $f;
 			}
 		}
-		$hidden = ob_get_clean();
 		
 		// Add necessary attributes.
 		$m = 'post';
@@ -271,13 +409,22 @@ class Form {
 		if ($hasFileField) {
 			$this->addAttribute ('enctype', 'multipart/form-data');
 		}
-				
+		
+		$display_error_container_tag = config ('laravel-forms.display--form-error-message-container-tag', true);
+		if (!is_bool ($display_error_container_tag)) {
+			$display_error_container_tag = true;
+		}
+		
 		return [
+			'id' => $this->id,
 			'fields' => $fields,
 			'attributes' => $this->renderAttributes(),
 			'method' => $this->method,
 			'hidden_fields' => $hidden,
 			'has_confirm_field' => $hasConfirmField,
+			'error_message_container_attributes' => $this->errorMessageContainerTag->renderAttributes(),
+			'error_message_attributes' => $this->errorMessageTag->renderAttributes(),
+			'is_livewire_form' => $this->isLwForm()
 		];
 		
 	}

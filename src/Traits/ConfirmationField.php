@@ -34,7 +34,7 @@ trait ConfirmationField {
 		$this->confirmFieldName = $this->name . '_confirmation';
 		$field = static::confirmationFieldName();
 		$cf = $this->parent->$field ($this->confirmFieldName);
-		
+
 		$this->addRule('confirmed');
 		$this->hasConfirmField = true;
 
@@ -44,7 +44,7 @@ trait ConfirmationField {
 		if (is_string ($this->label) && $this->label != '') {
 			$cf->label = 'Confirm ' . $this->label;
 		}
-		
+	
 		return $cf;
 	}	
 	

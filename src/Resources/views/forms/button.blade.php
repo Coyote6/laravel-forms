@@ -1,16 +1,23 @@
-@if ($display_form_item)<div {!! $form_item_attributes !!}>@endif
-	@if ($label && $display_label) 
-		@if ($display_label_container)<div {!! $label_container_attributes !!}>@endif
-			<label {!! $label_attributes !!}>{{ $label }} @if ($display_colon_tag)<span {!! $colon_tag_attributes !!}>:</span>@endif @if ($display_required_tag)<span {!! $required_tag_attributes !!}>*</span>@endif</label>
-		@if ($display_label_container)</div>@endif
-	@endif
-	@if ($display_field_container)<div {!! $field_container_attributes !!}>@endif
-		<button {!! $attributes !!}>{!! $content !!}</button>
-		@include ('laravel-forms::forms.error-icon')
-	@if ($display_field_container)</div>@endif
-	@if ($has_error)
-		@if ($display_error_message_container)<div {!! $error_message_container_attributes !!}>@endif
-			<div {!! $error_message_attributes !!}>{{ $message }}</div>
-		@if ($display_error_message_container)</div>@endif
-	@endif
-@if ($display_form_item)</div>@endif
+<div {{ $form_item_attributes }}>
+	<x-forms-label 
+		:text="$label" 
+		:attributes="$label_attributes"
+		:textAttributes="$label_text_attributes"
+		:colon="$display_colon_tag" 
+		:colonAttributes="$colon_tag_attributes"
+		:required="$display_required_tag" 
+		:requiredAttributes="$required_tag_attributes"
+		:containerAttributes="$label_container_attributes"
+		:helpText="($label) ? $help_text : false"
+	></x-forms-label>
+	<div {{ $field_container_attributes }}>
+		<x-forms-button {{ $attributes }}>
+			{!! $content !!}
+		</x-forms-button>
+		<x-forms-icon.error.wrapped :display="$display_error_icon" :containerAttributes="$error_icon_container_attributes" :attributes="$error_icon_attributes"></x-forms-icon.error.wrapped>
+		@if (!$label && $help_text)
+			<x-forms-help :text="$help_text" class="left-5 top-0"></x-forms-help>
+		@endif
+	</div>
+	<x-forms-error :display='$has_error' :errorAttributes='$error_message_attributes' :container_attributes='$error_message_container_attributes'>{{ $message }}</x-forms-error>
+</div>

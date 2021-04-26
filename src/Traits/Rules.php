@@ -52,6 +52,7 @@ trait Rules {
 				$this->rules[] = $rule;
 			}
 		}
+		return $this;
 	}
 	
 	
@@ -62,17 +63,21 @@ trait Rules {
 				$this->addRule ($rule);
 			}
 		}
+		return $this;
 	
 	}
 	
 	
 	public function removeRule ($ruleName) {
+	
 		if (
 			(is_string ($ruleName) || is_int ($ruleName)) &&
 			isset ($this->rules[$ruleName])
 		) {
 			unset ($this->rules[$ruleName]);
 		}
+		return $this;
+
 	}
 	
 	
@@ -81,6 +86,7 @@ trait Rules {
 	
 	public function setDefaultRules () {
 		$this->addRules ($this->defaultRules());
+		return $this;
 	}
 	
 	
@@ -100,6 +106,7 @@ trait Rules {
 		if (is_callable([$this, 'addAttribute'])) {
 			$this->addAttribute ('required');
 		}
+		return $this;
 	}
 	
 	
@@ -111,6 +118,7 @@ trait Rules {
 		if (is_callable([$this, 'removeAttribute'])) {
 			$this->removeAttribute ('required');
 		}
+		return $this;
 	}
 	
 	

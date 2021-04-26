@@ -14,36 +14,44 @@ trait LivewireModel {
 	protected $livewireLoad = 'normal';
 	
 	
-	public function livewireModel (string $name) {
+	public function livewireModel (string $name = null) {
+		if (is_null ($name) || $name == '') {
+			$name = $this->name;
+		}
 		$this->livewireModel = $name;
 		if ($this instanceof Field) {
 			$this->addAttribute ('wire:model', $name);
 		}
+		return $this;
 	}
 	
-	public function lwModel (string $name) {
-		$this->livewireModel ($name);
+	public function lwModel (string $name = null) {
+		return $this->livewireModel ($name);
 	}
 	
-	public function lw (string $name) {
-		$this->livewireModel ($name);
+	public function lw (string $name = null) {
+		return $this->livewireModel ($name);
 	}
 	
 	
-	public function livewireModelLazy (string $name) {
+	public function livewireModelLazy (string $name = null) {
+		if (is_null ($name) || $name == '') {
+			$name = $this->name;
+		}
 		$this->livewireModel = $name;
 		$this->livewireLoad = 'lazy';
 		if ($this instanceof Field) {
 			$this->addAttribute ('wire:model.lazy', $name);
 		}
+		return $this;
 	}
 	
-	public function lwModelLazy (string $name) {
-		$this->livewireModel ($name);
+	public function lwModelLazy (string $name = null) {
+		return $this->livewireModelLazy ($name);
 	}
 	
-	public function lwLazy (string $name) {
-		$this->livewireModel ($name);
+	public function lwLazy (string $name = null) {
+		return $this->livewireModelLazy ($name);
 	}
 	
 	

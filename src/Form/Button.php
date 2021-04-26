@@ -23,6 +23,12 @@ class Button extends Field {
 		}
 	}
 	
+	
+	public function content (string $content) {
+		$this->content = $content;
+		return $this;
+	}
+	
 
 	protected function prerender () {
 		
@@ -33,7 +39,7 @@ class Button extends Field {
 		$this->value = old ($this->name, $this->value);
 		
 		// Add a default value if we are to render as a button.
-		if ($this->template == 'button' && !is_string ($this->content)) {
+		if ($this->template == 'button' && (!is_string ($this->content) || $this->content == '')) {
 			$this->content = $this->value;
 		}
 		
@@ -45,8 +51,8 @@ class Button extends Field {
 			$this->content = strip_tags (strip_tags ($this->content, $allowed), $allowed); 
 		}
 				
-		$this->labelTag->addAttribute ('for', $this->name);
-		$this->addAttribute ('id', $this->name);
+		$this->labelTag->addAttribute ('for', $this->id);
+		$this->addAttribute ('id', $this->id);
 						
 	}
 	

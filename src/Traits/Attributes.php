@@ -4,6 +4,9 @@
 namespace Coyote6\LaravelForms\Traits;
 
 
+use Coyote6\LaravelForms\Form\AttributeBag;
+
+
 trait Attributes {
 	
 	
@@ -11,15 +14,19 @@ trait Attributes {
 	protected $classes = [];
 	
 	
+	//
+	// Generic Attributes
+	//
+	
 	public function addAttribute (string $name, $value = true) {
-		if (!is_string ($value) && !is_numeric ($value) && !is_bool ($value)) {
-			return;
+		if (is_string ($value) || is_numeric ($value) || is_bool ($value)) {
+			$this->attributes[$name] = $value;
 		}
-		$this->attributes[$name] = $value;
+		return $this;
 	}
 	
-	public function addAttr (string $name, $value) {
-		$this->addAttribute ($htmlAttribute);
+	public function addAttr (string $name, $value = true) {
+		return $this->addAttribute ($name, $value);
 	}
 	
 	
@@ -33,6 +40,7 @@ trait Attributes {
 		return $this->getAttribute ($name);
 	}	
 	
+	
 	public function hasAttribute (string $name) {
 		if (isset ($this->attributes[$name])) {
 			return true;
@@ -40,16 +48,23 @@ trait Attributes {
 		return false;
 	}
 	
+	
 	public function removeAttribute (string $name) {
 		if (isset ($this->attributes[$name])) {
 			unset ($this->attributes[$name]);
 		}
+		return $this;
 	}
+	
 
 	public function removeAttr (string $name) {
-		$this->removeAttribute ($name);
+		return $this->removeAttribute ($name);
 	}	
 	
+	
+	//
+	// Classes
+	//
 	
 	public function addClass ($classes) {
 		
@@ -67,6 +82,7 @@ trait Attributes {
 				}
 			}
 		}
+		return $this;
 	
 	}
 	
@@ -87,41 +103,50 @@ trait Attributes {
 				}
 			}
 		}
+		return $this;
+
 	}
 	
 	
 	public function resetClasses () {
 		$this->classes = [];
+		return $this;
+	}
+	
+	
+	//
+	// Placeholder
+	//
+	public function placeholder (string $value) {
+		$this->addAttribute ('placeholder', $value);
+		return $this;
 	}
 
 	
 	public function renderAttributes () {
 		
-		
 		$attrs = [];
 		if (!empty ($this->classes)) {
-			$attrs[] = 'class="' . implode (' ', $this->classes) . '"';
+			$attrs['class'] = implode (' ', $this->classes);
 		}
 		
 		foreach ($this->attributes as $name => $value) {
+			
 			if ($name == 'class') {
 				continue;
 			}
-			// Check for single value attributes.
-			if (in_array ($name, ['checked', 'required', 'multiple']) && $value) {
-					$attrs[] = $name;
-			}
+
 			// Translate Placeholder Text, Descriptions, Captions, & Alt Texts
-			else if (in_array ($name, ['placeholder', 'description', 'caption', 'alt'])) {
-				$value = __($value);
-				$attrs[] = $name . '="' . str_replace ('"', '\"', $value) . '"';
+			if (in_array ($name, ['placeholder', 'description', 'caption', 'alt'])) {
+				$attrs[$name] = __($value);
 			}
 			else {
-				$attrs[] = $name . '="' . str_replace ('"', '\"', $value) . '"';
+				$attrs[$name] = $value;
 			}
 		}
 
-		return implode (' ', $attrs);
+		return new AttributeBag ($attrs);
+		
 	}
 	
 	

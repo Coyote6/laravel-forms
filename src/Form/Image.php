@@ -8,6 +8,10 @@ use Coyote6\LaravelForms\Form\Input;
 
 
 class Image extends File {
+	
+	
+	protected $template = 'image';
+	
 		
 	public function __construct (string $name, $allowHighDefinitionImages = true) {
 		parent::__construct ($name);
@@ -17,19 +21,22 @@ class Image extends File {
 	
 	public function allowHighDefinitionImages () {
 		$this->isImage();
+		return $this;
 	}
 	
 	public function allowHighDefImgs () {
-		$this->allowHighDefinitionImage();
+		return $this->allowHighDefinitionImage();
 	}
 	
 	
 	public function disallowHighDefinitionImages () {
 		$this->isImage (false);
+		return $this;
 	}
+
 	
 	public function disallowHighDefImgs () {
-		$this->disallowHighDefinitionImage();
+		return $this->disallowHighDefinitionImage();
 	}
 	
 }

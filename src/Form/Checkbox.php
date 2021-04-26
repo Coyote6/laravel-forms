@@ -12,14 +12,23 @@ class Checkbox extends Input {
 
 	
 	protected $type = 'checkbox';
-	protected $template = 'input--checkbox';
+	protected $template = 'checkbox';
 	
 	
 	public function rules () {
+		
+		if (is_null ($this->value)) {
+			$this->value = 1;
+		}
+		
 		$vals = [$this->value];
 		if (!isset ($this->rules['required'])) {
 			$vals[] = '';
 		}
+		else {
+			$this->rules['accepted'] = 'accepted';
+		}
+		
 		$this->rules['in'] = Rule::in($vals);
 		return $this->rules;
 	}
@@ -28,8 +37,12 @@ class Checkbox extends Input {
 	protected function prerender () {
 		
 		$val = old ($this->name);
-		if ($val == $this->value) {
+		if (!is_null ($val) && $val == $this->value) {
 			$this->addAttribute('checked');
+		}
+		
+		if (is_null ($this->value)) {
+			$this->value = 1;
 		}
 		
 		parent::prerender();

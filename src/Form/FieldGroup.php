@@ -20,7 +20,7 @@ class FieldGroup {
 
 
 	use Attributes, AddFields, Weighted, GroupedWithFormButtons, Theme, Render, Tags;
-#		LivewireRules,
+
 			
 	protected $type = 'field-group';
 	protected $name;
@@ -29,6 +29,7 @@ class FieldGroup {
 	public $label = false;
 	public $parent;
 	public $form;
+	public $helpText;
 
 	
 	public function __construct (string $name) {
@@ -37,7 +38,8 @@ class FieldGroup {
 		
 		$this->formItemTag = new FieldItem ($this, 'form-item');
 		$this->initTags();
-				
+		$this->initTheme ('field');
+		
 		if ($this->defaultClasses) {
 			$this->formItemTag->addClass ('field-group');
 		}
@@ -112,6 +114,12 @@ class FieldGroup {
 		return $this->colonTag;
 	}	
 	
+	public function label (string $label) {
+		$this->label = $label;
+		return $this;
+	}
+	
+	
 	protected function sortFields () {
 		$toSort = [];
 		foreach ($this->fields as $name => $field) {
@@ -129,29 +137,25 @@ class FieldGroup {
 	
 	
 	protected function prerenderField () {
-		$this->formItemTag->addAttribute ('id', $this->name . '--fieldgroup');
-		$this->labelTag->addAttribute ('for', $this->name);
-		$this->addAttribute ('id', $this->name);
+		$this->formItemTag->addAttribute ('id', $this->id . '--fieldgroup');
+		$this->labelTag->addAttribute ('for', $this->id);
+		$this->addAttribute ('id', $this->id);
 	}
 	
 	
 	protected function templateVariables () {
-		
-		ob_start();
-		foreach ($this->sortFields() as $f) { 
-			$f->render();
-		}
-		$content =  ob_get_clean();
 
 		return [
 			
 			'attributes' => $this->renderAttributes(),
-			'content' => $content,
+			'fields' => $this->sortFields(),
 			'type' => $this->type,
 			'name' => $this->name,
+			'id' => $this->id,
 			'has_error' => $this->hasError(),
 			'message' => $this->errorMessage,
 			'label' => __($this->label), // Translate the label
+			'help_text' => __($this->helpText), // Translate the help text
 			
 			'label_attributes' => $this->labelTag->renderAttributes(),
 			'label_text_attributes' => $this->labelTextTag->renderAttributes(),
@@ -165,15 +169,8 @@ class FieldGroup {
 			'error_icon_container_attributes' => $this->errorIconContainerTag->renderAttributes(),
 			'error_icon_attributes' => $this->errorIconTag->renderAttributes(),
 
-			'display_form_item' => $this->formItemTag->display(),
-			'display_label_container' => $this->labelContainerTag->display(),
-			'display_label' => $this->labelTag->display(),
-			'display_label_text' => $this->labelTextTag->display(),
 			'display_required_tag' => ($this->isRequired()) ? $this->requiredTag->display() : false,
 			'display_colon_tag' => $this->colonTag->display(),
-			'display_field_container' => $this->fieldContainerTag->display(),
-			'display_error_message_container' => $this->errorMessageContainerTag->display(),
-			'display_error_icon_container' => $this->errorIconContainerTag->display(),
 			'display_error_icon' => ($this->hasError() && $this->errorIconTag->display()) ? true : false,
 			
 		];

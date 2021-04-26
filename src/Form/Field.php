@@ -3,6 +3,7 @@
 namespace Coyote6\LaravelForms\Form;
 
 
+use Coyote6\LaravelForms\Form\Form;
 use Coyote6\LaravelForms\Traits\Attributes;
 use Coyote6\LaravelForms\Traits\GroupedWithFormButtons;
 use Coyote6\LaravelForms\Traits\LivewireModel;
@@ -21,14 +22,16 @@ abstract class Field {
 		
 	protected $type;
 	protected $name;
-	protected $template;	
+	protected $template;
 	
 	public $value;
 	public $label = false;
 	public $parent;
 	public $form;
+	public $id;	
 	public $errorMessage;
-		
+	public $helpText;
+	
 	
 	public function __construct (string $name) {
 		
@@ -37,7 +40,7 @@ abstract class Field {
 		
 		$this->initTags();
 		$this->initTheme ('field');
-		
+			
 	}
 	
 	
@@ -100,9 +103,20 @@ abstract class Field {
 	}
 	
 	
+	public function label (string $label) {
+		$this->label = $label;
+		return $this;
+	}
+	
+	public function value ($value) {
+		$this->value = $value;
+		return $this;
+	}
+	
+	
 	protected function prerenderField () {
-		$this->labelTag->addAttribute ('for', $this->name);
-		$this->addAttribute ('id', $this->name);
+		$this->labelTag->addAttribute ('for', $this->id);
+		$this->addAttribute ('id', $this->id);
 	}
 	
 	
@@ -114,9 +128,11 @@ abstract class Field {
 			'value' => old ($this->name, $this->value),
 			'type' => $this->type,
 			'name' => $this->name,
+			'id' => $this->id,
 			'has_error' => $this->hasError(),
 			'message' => $this->errorMessage,
 			'label' => __($this->label), // Translate the label
+			'help_text' => __($this->helpText), // Translate the help text
 			
 			'label_attributes' => $this->labelTag->renderAttributes(),
 			'label_text_attributes' => $this->labelTextTag->renderAttributes(),
@@ -130,15 +146,8 @@ abstract class Field {
 			'error_icon_container_attributes' => $this->errorIconContainerTag->renderAttributes(),
 			'error_icon_attributes' => $this->errorIconTag->renderAttributes(),
 
-			'display_form_item' => $this->formItemTag->display(),
-			'display_label_container' => $this->labelContainerTag->display(),
-			'display_label' => $this->labelTag->display(),
-			'display_label_text' => $this->labelTextTag->display(),
 			'display_required_tag' => ($this->isRequired()) ? $this->requiredTag->display() : false,
 			'display_colon_tag' => $this->colonTag->display(),
-			'display_field_container' => $this->fieldContainerTag->display(),
-			'display_error_message_container' => $this->errorMessageContainerTag->display(),
-			'display_error_icon_container' => $this->errorIconContainerTag->display(),
 			'display_error_icon' => ($this->hasError() && $this->errorIconTag->display()) ? true : false,
 			
 		];

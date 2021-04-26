@@ -12,34 +12,39 @@ Laravel Forms is just a simple class used to generate the html for forms and ass
 ```sh
 composer require Coyote6/laravel-forms
 ```
-2. Copy the config file to your config folder.
+2. Optional - Copy the config file to your config folder.
 ```sh
 php artisan vendor:publish --tag=laravel-forms
 ```
 
-## Basic Usage
-In the controller file
+## To Use
+
+### Basic Example
+#### In the controller file
 ```php
 use Coyote6\LaravelForms\Form\Form;
 
 $form = new Form();
-$field1 = $form->text('field-name--1');	
+
+$field1 = $form->text('field-name--1');		// Returns the field object
 $field1->addRule ('min', '5');
 $field1->label = 'Field 1';
 $field1->required();
-$field2 = $form->textArea ('field-name--2');
-$field2->label = 'Field 2';
-```
 
-In Blade Template
+$form->textarea ('field-name--2')
+	->label('Field 2')						// Chained label and placeholder
+	->placeholder('Field 2');
+```
+#### In Blade Template
 ``` PHP
 {!! $form !!}
 ```
 
-## Best Practice
+
+### Best Practice
 For best use it is recommended to set up the form in the controller under its own private/protected method, so that it may be reused for validation.
 
-In the controller file
+#### In the controller file
 ```php
 
 namespace App\Http\Controllers;
@@ -53,17 +58,21 @@ class HomeController extends Controller  {
 	
 	protected function form () {
 
-		$form = new Form();
-		$form->action = '/home';
-		$form->method = 'POST';
+		static $form; 					// Create a singleton to keep form ids the same when validating.
 		
-		$field1 = $form->email('email');	
-		$field1->addAttribute ('placeholder', 'Please, Enter Your Email Address');
-		$field1->required();
-		
-		$field2 = $form->checkbox ('tos');
-		$field2->label = 'You must agree to our ToS.';
-		$field2->required();
+		if (is_null ($form)) {
+			$form = new Form();
+			$form->action ('/home');	// Default action is '#' so it will submit to the same page if not set.
+			$form->method ('POST');		// Available methods GET, POST, PUT, or DELETE
+			
+			$form->email('email')	
+				->placeholder ('Please, Enter Your Email Address')
+				->required();
+			
+			$form->checkbox ('tos')
+				->label ('You must agree to our ToS.')
+				->required();
+		}
 		
 		return $form;
 		
@@ -85,27 +94,32 @@ class HomeController extends Controller  {
 ```
 
 
-## Validation
+### Validation
 ```php
 $form = new Form();
-$form->action = '/home';
-$form->method = 'PUT';
+$form->action ('/home')
+	->method ('PUT');
 
-$u = $form->username ('username');
-$u->required();
-$u->addRules (['min:8', 'max:255', 'unique:users']); // Add laravel validation rules as an array.
+$form->text ('username')
+	->label ('Username')
+	->required()
+	->addRules (['min:8', 'max:255', 'unique:users']);	// Add laravel validation rules as an array.
 
-$e = $form->email ('email');
-$e->required();
-$e->addRule ('max:255'); // Add laravel validation rules individually
-$e->addRule ('unique', 'users');
-$ec = $e->confirm();  // Automatically adds extra confirm field and validates it.
+$form->email ('email')
+	->label ('Email')
+	->required()
+	->addRule ('max:255') 								// Add laravel validation rules individually
+	->addRule ('unique', 'users')
+	->confirm()											// Automatically adds extra confirm field and validates it.
+	->label ('Email Confirmation');						// Return value is the confirmation field.
 
-$p = $form->password ('password');	
-$p->required();
-$p->addRules (['min:5', 'max:255']]);
-$p->removeRule ('max');  // Remove rules by their name
-$p->confirm();
+$form->password ('password')
+	->label ('Password')
+	->required()
+	->addRules (['min:5', 'max:255'])
+	->removeRule ('max')  								// Remove rules by their name
+	->confirm()
+	->label ('Password Confirmation');
 
 // Default submit button gets automatically added, unless told otherwise.
 if (isset ($_POST['submit'])) {
@@ -115,19 +129,19 @@ if (isset ($_POST['submit'])) {
 ```
 
 
-## Use with Livewire
-In the your base app blade template, below where you call @livewireScripts, add a stack('scripts') call if you haven't already done so.
+### Use with Livewire
+#### In the your base app blade template, below where you call @livewireScripts, add a stack('scripts') call if you haven't already done so.
 ```php
 @stack('scripts')
 ```
 
-In the component
+#### In the component (Basic Method)
 ```php
  
 namespace App\Http\Livewire;
  
-use Livewire\Compoent;
-use Coyote6\LaravelFroms\Form\Form;
+use Livewire\Component;
+use Coyote6\LaravelForms\Form\Form;
  
 class Example extends Component {
 	 
@@ -138,8 +152,8 @@ class Example extends Component {
 	
 	
 	protected function rules() {
-    return $this->form()->lwRules(); // lwRules() is an alias to livewireRules()
-  }
+		return $this->form()->lwRules(); // lwRules() is an alias to livewireRules()
+	}
     	
 	public function updated ($field) {
 		$this->validateOnly($field);
@@ -162,202 +176,321 @@ class Example extends Component {
 	// Optionally set up a store method as a fallback in case someone shuts off JavaScript
 	public function storeFallback () {
 		$values = $this->form()->validate();
-		return ['success' => $values;
+		return ['success' => $values];
 	}
 	
 	
 	public function form () {
 		
-		$form = new Form ($this); 	// Sets up the form as a Livewire form... alternatively you can call $form->isLivewireForm($this);	
-		$form->action = '/store';		// Optional fallback in case someone shuts off Javascript
-	  $form->method('POST');
-		$form->addAttribute ('wire:submit.prevent', 'store');
+		static $form; 										// Create a singleton to keep form ids the same when validating.
 		
-		$e = $form->email ('email');
-		$e->label = 'Email';
-		$e->livewireModel ('email');
-		$e->required();
-		$e->addRule('unique:users');
+		if (is_null ($form)) {
+			
+			$form = new Form ($this); 						// Sets up the form as a Livewire form... 
+															// alternatively you can call $form->isLivewireForm($this);	
+											
+			$form->action ('/store')						// Optional fallback in case someone shuts off Javascript
+				->method('POST')
+				->addAttribute ('wire:submit.prevent', 'store');
+			
+			$form->email ('email')
+				->label ('Email')
+				->livewireModel ('email')
+				->required()
+				->addRule('unique:users');
+			
+			$p = $form->password ('password')
+				->label ('Password')
+				->lwModel ()	 							// lwModel() & lw() are aliases to livewireModel() method
+															// If no value is passed, the name is used for the livewire model.
+				->addRule ('min:6');
+			
+			$pc = $p->confirm();
+			$pc->label ('Confirm Password')
+				->lwModelLazy ('passwordConfirmation'); 	// Use livewireModelLazy(), lwModelLazy(), lwLazy() to call wire:model.lazy 
+			
+			//
+			// Use getLivewireModel(), getLwModel(), getLw() methods to retrieve the Livewire model name.
+			// $pc->getLw();
+			//
 		
-		$p = $form->password ('password');
-		$p->label = 'Password';
-		$p->lwModel ('password'); // Alias to livewireModel() method
-		$p->addRule ('min:6');
-		
-		$pc = $p->confirm();
-		$pc->label = 'Confirm Password';
-		$pc->lwModelLazy ('passwordConfirmation'); // Use livewireModelLazy(), lwModelLazy(), lwLazy() to call wire:model.lazy 
-		
-		//
-		// Use getLivewireModel(), getLwModel(), getLw() methods to retrieve the Livewire model name.
-		// $pc->getLw();
-		//
-		
+		}
 		return $form;
 		
 	}
 	
 }
 ```
+#### In the component (Using Coyote6\LaravelForms\Livewire\Component)
+```php
+ 
+namespace App\Http\Livewire;
+ 
+use Coyote6\LaravelForms\Livewire\Component;
+use Coyote6\LaravelForms\Form\Form;
+ 
+class Example extends Component {
+	 
+	 
+	public $email = '';
+	public $password = '';
+	public $passwordConfirmation = '';
+	
+	
+	// Optional
+	public function template () {
+		return 'livewire.example';
+	}	
+	 
+	public function store () {
+		
+		$values = $this->validate();  
+		return ['success' => $values];
+		
+	}
+	
+	
+	// Optionally set up a store method as a fallback in case someone shuts off JavaScript
+	public function storeFallback () {
+		$values = $this->form()->validate();
+		return ['success' => $values];
+	}
+	
+	
+	public function generateForm () {
+		
+		$form = new Form ([
+			'lw' => $this, 
+			'cache' => false,
+			'theme' => 'minimal'
+		]);
+		
+		$form->addAttribute ('wire:submit.prevent', 'store');
+		
+		$form->email ('email')
+			->lwLazy()
+			->label ('Email')
+			->required()
+			->addRule('unique:users');
+		
+		$form->password ('password')
+			->lwLazy()
+			->label ('Password')
+			->addRule ('min:6')
+			->confirm()
+			->label ('Confirm Password')
+			->lwLazy ('passwordConfirmation');
+		
+		$form->submitButton ('submit')
+			->content ('Comfirm');
 
-In the Livewire Blade Template
+		return $form;
+
+	}
+	
+}
+```
+#### In the Livewire Blade Template
 ``` PHP
 {!! $form !!}
 ```
-
-In the Web Routes File -- Optional
+#### In the Web Routes File -- Optional
 ``` PHP
 Route::post('/store', 'App\Http\Livewire\Example@storeFallback');
 
 ```
 
-## Use with Tailwind CSS
-You must already have tailwind installed and configured.
+### Use with Tailwind CSS
+Tailwind is now the default theming for the forms.  You must already have tailwind purchased, installed, and configured.
 
-In the .env File
-```
-FORM_THEME=tailwind
-```
-
-Some classes are added to items automatically.  You can shut them off by using:
+Some non-tailwind classes are added to items automatically.  These are generic class names such as .form-item, .label, .field, etc.  You can shut them off in the .env file using:
 ```
 FORM_DEFAULT_CLASSES=false
 ```
+Or if you published the config file, you can set `default-classes` to false.
 
-If you wish to change the default tailwind classes, you can change the config/laravel-forms.php file.  The default classes are stored under the tailwind section.  Additional styling options are set in there as well.
+If you wish to change the default tailwind classes, they are stored in the classes section of the config file.  Additional styling options are set in there as well.
 
-## Available Fields (More to come)
-### Button - &lt;button&gt;
+### Theming
+You can theme the forms in a couple ways.  
+
+The first which is mentioned above is to edit the config file and overriding the classes.
+
+The other is to copy the files from the -/src/Resources/views/- directory (sorry haven't wrote the publish command yet, but will.) and move any of these files into -resources/views/- directory in your app. The package will check your directory for files and use it over the default files. Be sure to set caching to false on either your individual form/field or set the master caching to false in the config.  The template naming conventions are as follows:
+
+resources/views/forms.{$template}--{$element_id}.blade.php
+resources/views/forms.{$template}--{$element_name}.blade.php
+resources/views/forms.{$theme}.{$template}.blade.php
+resources/views/forms.{$template}--{$theme}.blade.php
+vendor/coyote6/laravel-forms/src/resources/views/forms.{$theme}.{$template}.blade.php
+vendor/coyote6/laravel-forms/src/resources/views/forms.{$template}--{$theme}.blade.php
+resources/views/forms.{$template}.blade.php
+vendor/coyote6/laravel-forms/src/resources/views/forms.{$template}.blade.php
+
+You can merge your custom classes to any of the attribute variables in the templates:
+```php
+<div {{ $attributes->merge([
+	'class' => 'new classes'
+]) }}></div>
+// Or
+<x-component :attributes="$attributes->merge(['class'=>'new classes'])"></x-component>
+```
+
+To utilize a theme on certain forms, and set classes from the config method, set the theme when constructing the form.
+```php
+$form = new Form (['theme' => 'minimal']);
+```
+
+If you just with to override the templates without setting classes from the config file, then you can call it anytime before rendering or validating.
+```php
+$form->theme = 'minimal';
+$field->theme = 'minimal';
+```
+
+Fields will inherit their parent's theme if it is set during the construction, or before fields are added.
+
+
+### Available Fields (More to come)
+#### Button - &lt;button&gt;
 ```php
 
-$b = $form->button ('field-name');
-$b->value = 'Button Value';		// Is the default button content unless the content property is set.
-$b->content = 'This is what shows inside the button';
+$form->button ('field-name')
+	->value ('Button Value')								// Is the default button content unless the content property is set.
+	->content ('This is what shows inside the button');
 
 ```
 
-### Checkbox - &lt;input type="checkbox"&gt;
+#### Checkbox - &lt;input type="checkbox"&gt;
 ```php
 
-$c = $form->checkbox ('field-name');
-$c->value = 'Value when submitted';	
-$c->label = 'Click me';
-```
-
-### Email - &lt;input type="email"&gt;
-Simple Email
-```php
-
-$e = $form->email ('field-name');
+$form->checkbox ('field-name')
+	->value ('Value when submitted')	
+	->label ('Click me');
 
 ```
 
-Email w/ Confirmation
+#### Email - &lt;input type="email"&gt;
+##### Simple Email
 ```php
 
-$e = $form->email ('field-name');
-$e->label = 'Email';
-$ec = $e->confirm();
-$ec->label = 'Confirm Email';
+$form->email ('field-name');
 
 ```
 
-### Field Group - &lt;div&gt;
+##### Email w/ Confirmation
+```php
+
+$form->email ('field-name')
+	->label ('Email')
+	->confirm()
+	->label ('Confirm Email');
+
+```
+
+#### Field Group - &lt;div&gt;
 This just wraps a group of fields.  It can have a label, if desired.
 ```php
 
-$fg = $form->fieldGroup ('field-name');
-$fg->label = 'Contact Info';
-```
-
-### File - &lt;input type="file"&gt; (Untested at the moment)
-```php
-
-$f = $form->file ('field-name');
-$f->label = 'Upload File';
-```
-
-### Hidden - &lt;input type="hidden"&gt;
-```php
-
-$h = $form->hidden ('field-name');
-$h->value = 'some value';
-```
-
-### Html - &lt;div&gt; 
-```php
-
-$h = $form->html ('field-name');
-$h->content = '<em>Custom Html Field</em>';
-```
-
-### Image - &lt;input type="file"&gt; (Untested at the moment)
-```php
-
-$i = $form->image ('field-name');
-$i->label = 'Upload Image';
-```
-
-### Number - &lt;input type="number"&gt;
-```php
-
-$n = $form->number ('field-name');
-$n->label = 'Enter Your Lucky Number';
-```
-
-### Password - &lt;input type="password"&gt;
-Simple Password
-```php
-
-$p = $form->password ('field-name');
-$p->label = 'Password';
-```
-
-Password w/ Confirm
-```php
-
-$p = $form->password ('field-name');
-$p->label = 'Password';
-$pc = $p->confirm();
-$pc->label = 'Password Confirm';
-```
-
-### Radio Buttons - &lt;input type="radio"&gt;
-Simple Radio Button
-```php
-
-$r1 = $form->radios ('field-name');
-$r1->label = "Please select an option";
-$r1->addOptions([
-  'o1' => 'Option 1',
-  'o2' => 'Option 2',
-  'o3' => 'Option 3',
-  'o4' => 'Option 4'
-]);
-$r1->required();
+$form->fieldGroup ('field-name')
+	->label ('Contact Info');
 
 ```
 
-Radio Buttons with HTML
+#### File - &lt;input type="file"&gt;
 ```php
 
-$r2 = $form->radios ('field-name');
-$r2->required();
-$r2->value = 'o1';  // Set a default value
+$form->file ('field-name')
+	->label ('Upload File');
+
+```
+
+#### Hidden - &lt;input type="hidden"&gt;
+```php
+
+$form->hidden ('field-name')
+	->value = 'some value';
+
+```
+
+#### Html - &lt;div&gt; 
+```php
+
+$form->html ('field-name')
+	->content  ('<em>Custom Html Field</em>');
+	
+```
+
+#### Image - &lt;input type="file"&gt;
+```php
+
+$form->image ('field-name')
+	->label ('Upload Image');
+
+```
+
+#### Number - &lt;input type="number"&gt;
+```php
+
+$form->number ('field-name')
+	->label ('Enter Your Lucky Number');
+
+```
+
+#### Password - &lt;input type="password"&gt;
+##### Simple Password
+```php
+
+$form->password ('field-name')
+	->label ('Password');
+	
+```
+
+##### Password w/ Confirm
+```php
+
+$p = $form->password ('field-name')
+	->label ('Password')
+	->confirm()
+	->label ('Password Confirm');
+	
+```
+
+#### Radio Buttons - &lt;input type="radio"&gt;
+##### Simple Radio Button
+```php
+
+$form->radios ('field-name')
+	->label ("Please select an option")
+	->addOptions([
+	  'o1' => 'Option 1',
+	  'o2' => 'Option 2',
+	  'o3' => 'Option 3',
+	  'o4' => 'Option 4'
+	])
+	->required();
+
+```
+
+##### Radio Buttons with HTML
+```php
+
+$r2 = $form->radios ('field-name')
+	->required()
+	->value ('o1');  // Set a default value
 	    
 $rb1 = new Radio ('field-name');
-$rb1->label = 'Option 1';
-$rb1->value = 'o1';
+$rb1->label ('Option 1')
+	->value ('o1');
 	    
 $h1 = new Html ('field-name--html-1');
-$h1->value = 'Cool HTML info about option 1';
+$h1->value ('Cool HTML info about option 1');
 	    
 $rb2 = new Radio ('field-name');
-$rb2->label = 'Option 2';
-$rb2->value = 'o2';
+$rb2->label ('Option 2')
+	->value ('o2');
 
 $h2 = new Html ('field-name--html-2');
-$h2->value = 'Cool HTML info about option 2';
+$h2->value ('Cool HTML info about option 2');
 
 $r2->addField ($rb1);
 $r2->addField ($h1);
@@ -366,7 +499,7 @@ $r2->addField ($h2);
 
 ```
 
-### Select - &lt;select&gt;
+#### Select - &lt;select&gt;
 ```php
 
 $s = $form->select ('field-name');
@@ -380,34 +513,49 @@ $s->required();
 
 ```
 
-### Submit Button - &lt;button&gt; or &lt;input type="submit"&gt;
-Rendered as &lt;button&gt;
+#### Submit Button - &lt;button&gt; or &lt;input type="submit"&gt;
+##### Rendered as a Primary/Submit &lt;button&gt;
 ```php
 
-$s = $form->submitButton ('field-name');
-$s->value = 'submit';
-$s->content = 'Press me';			// $s->label becomes the content, if the content property is not set.
+$form->submitButton ('field-name')
+	->value ('submit')
+	->content ('Press me');			// $s->label becomes the content, if the content property is not set.
 
 ```
 
-Rendered as &lt;input type="submit"&gt;
+##### Rendered as Secondary &lt;button&gt;
 ```php
 
-$s = $form->submitButton ('field-name');
-$s->value = 'submit';
-$s->label = 'Press me';
-$s->renderAsInput();
+$form->submitButton ('field-name')
+	->value ('submit')
+	->content ('Press me')
+	->renderAsButton();
+
 
 ```
 
-### Text - &lt;input type="text"&gt;
+##### Rendered as &lt;input type="submit"&gt;
 ```php
 
-$t = $form->text ('field-name');
+$form->submitButton ('field-name')
+	->value ('submit')
+	->label ('Press me')
+	->renderAsInput();
+
 ```
 
-### Textarea - &lt;textarea&gt;
+#### Text - &lt;input type="text"&gt;
 ```php
 
-$ta = $form->textarea ('field-name');
+$form->text ('field-name');
+
 ```
+
+#### Textarea - &lt;textarea&gt;
+```php
+
+$form->textarea ('field-name');
+
+```
+
+More fields coming in the future.

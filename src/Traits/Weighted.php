@@ -12,6 +12,7 @@ trait Weighted {
 		if (is_numeric($weight)) {
 			$this->weight = $weight;
 		}
+		return $this;
 	}
 	
 }
