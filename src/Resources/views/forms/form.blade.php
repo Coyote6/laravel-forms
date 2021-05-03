@@ -24,12 +24,11 @@
 	@if ($has_confirm_field && $is_livewire_form)
 		@push('scripts')
 			<script>
-				//console.log('updatedConfirmation');
-				//Livewire.on('updatedConfirmation', name => {
-				//	var el = document.getElementById(name);
-				//	var	val = el.value;
-				//	@this.set(name, val);
-				//});
+				Livewire.on('updatedConfirmation', name => {
+					var el = document.getElementById(name);
+					var	val = el.value;
+					@this.set(name, val);
+				});
 			</script>
 		@endpush
 	@endif
