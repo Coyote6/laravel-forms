@@ -20,13 +20,13 @@
 		@if ($text)
 			@if ($reversed)
 			
-				<span {{ $text_attributes }}>
+				<span {{ $textAttributes }}>
 					@if ($colon)
-						<span {{ $colon_attributes }}>:</span>
+						<span {{ $colonAttributes }}>:</span>
 					@endif 
 					{!! $text !!} 
 					@if ($required)
-						<span {{ $required_attributes }}>*</span>
+						<span {{ $requiredAttributes }}>*</span>
 					@endif
 				</span>
 				

@@ -29,20 +29,30 @@ trait ConfirmationField {
 	}
 	
 
-	public function addConfirmationField () {
+	public function addConfirmationField (string $confirmationFieldLivewireProperty = null) {
 		
 		$this->confirmFieldName = $this->name . '_confirmation';
 		$field = static::confirmationFieldName();
 		$cf = $this->parent->$field ($this->confirmFieldName);
+		
+		$this->addAttribute('data-model', $this->getLw());
 
 		$this->addRule('confirmed');
 		$this->hasConfirmField = true;
 
-		$cf->addAttribute('wire:keyup', '$emit(\'updatedConfirmation\',\'' . $this->name . '\')');
-		$cf->addAttribute('wire:blur', '$emit(\'updatedConfirmation\',\'' . $this->name . '\')');
+		$cf->addAttribute('wire:keyup', '$emit(\'updatedConfirmation\',\'' . $this->id . '\')');
+		$cf->addAttribute('wire:blur', '$emit(\'updatedConfirmation\',\'' . $this->id . '\')');
+		
+		if ($this->getLw() != '' && !is_null ($confirmationFieldLivewireProperty) && $confirmationFieldLivewireProperty != '') {
+			$cf->setLwLoadMethod ($this->getLwLoadMethod(), $confirmationFieldLivewireProperty, $this->getLwDebounceDelay());
+		}
 		
 		if (is_string ($this->label) && $this->label != '') {
 			$cf->label = 'Confirm ' . $this->label;
+		}
+		
+		if ($this->hasAttribute('placeholder')) {
+			$cf->placeholder ('Confirm ' . $this->getAttr('placeholder'));
 		}
 	
 		return $cf;

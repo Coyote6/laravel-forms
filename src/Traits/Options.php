@@ -32,7 +32,7 @@ trait Options {
 	
 	public function addOptions (array $options) {
 		foreach ($options as $value => $label) {
-			$this->addOption ($value, $label);
+			$this->addOption ((string) $value, $label);
 		}
 		return $this;
 	}
@@ -51,7 +51,10 @@ trait Options {
 	}
 	
 	
-	public function options () {
+	public function options (array $options = null) {
+		if (is_array ($options)) {
+			return $this->addOptions($options);
+		}
 		return $this->options;
 	}
 	

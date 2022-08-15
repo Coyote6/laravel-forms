@@ -31,6 +31,7 @@ class AttributeBag extends ComponentAttributeBag {
         }
 
         return trim($string);
+        
     }
     
 }

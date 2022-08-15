@@ -29,6 +29,14 @@ trait Attributes {
 		return $this->addAttribute ($name, $value);
 	}
 	
+	public function attribute (string $name, $value = true) {
+		return $this->addAttribute ($name, $value);
+	}
+	
+	public function attr (string $name, $value = true) {
+		return $this->addAttribute ($name, $value);
+	}
+	
 	
 	public function getAttribute (string $name) {
 		if (isset ($this->attributes[$name])) {
@@ -115,12 +123,49 @@ trait Attributes {
 	
 	
 	//
-	// Placeholder
+	// Common Attributes
 	//
-	public function placeholder (string $value) {
-		$this->addAttribute ('placeholder', $value);
+	public function placeholder (string $value = null) {
+		if (is_null ($value) || $value == '') {
+			if (!is_null ($this->label) && $this->label != '') {
+				$value = $this->label;
+			}
+			else {
+				$value = ucfirst ($this->name);
+			}
+		}
+		return $this->addAttribute ('placeholder', $value);
+	}
+	
+	public function autocomplete (string $value = null) {
+		if (is_null ($value) || $value == '') {
+			$value = $this->type;
+		}
+		return $this->addAttribute ('autocomplete', $value);
+	}
+	
+	public function disable () {
+		return $this->addAttribute ('disabled', true);
+	}
+	
+	public function disabled () {
+		return $this->disable();
+	}
+	
+	public function enable () {
+		if ($this->hasAttr ('disable')) {
+			$this->removeAttribute ('disabled');
+		}
 		return $this;
 	}
+	
+	public function enabled () {
+		return $this->enable();
+	}
+	
+	//
+	// Actions
+	//
 
 	
 	public function renderAttributes () {
@@ -144,7 +189,7 @@ trait Attributes {
 				$attrs[$name] = $value;
 			}
 		}
-
+		
 		return new AttributeBag ($attrs);
 		
 	}

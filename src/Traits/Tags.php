@@ -37,4 +37,34 @@ trait Tags {
 		
 	}
 	
+	protected function initTagThemes () {
+		
+		// Set the theme
+		$this->formItemTag->theme = $this->theme;
+		$this->labelContainerTag->theme = $this->theme;
+		$this->labelTag->theme = $this->theme;
+		$this->labelTextTag->theme = $this->theme;
+		$this->fieldContainerTag->theme = $this->theme;
+		$this->errorMessageContainerTag->theme = $this->theme;
+		$this->errorMessageTag->theme = $this->theme;
+		$this->errorIconContainerTag->theme = $this->theme;
+		$this->errorIconTag->theme = $this->theme; 
+		$this->requiredTag->theme = $this->theme; 
+		$this->colonTag->theme = $this->theme;
+		
+		// Init the tags
+		$this->formItemTag->init();
+		$this->labelContainerTag->init();
+		$this->labelTag->init();
+		$this->labelTextTag->init();
+		$this->fieldContainerTag->init();
+		$this->errorMessageContainerTag->init();
+		$this->errorMessageTag->init();
+		$this->errorIconContainerTag->init();
+		$this->errorIconTag->init(); 
+		$this->requiredTag->init(); 
+		$this->colonTag->init();
+		
+	}
+	
 }

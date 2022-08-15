@@ -7,8 +7,10 @@ use Coyote6\LaravelForms\Form\Form;
 use Coyote6\LaravelForms\Traits\Attributes;
 use Coyote6\LaravelForms\Traits\GroupedWithFormButtons;
 use Coyote6\LaravelForms\Traits\LivewireModel;
+use Coyote6\LaravelForms\Traits\Prefix;
 use Coyote6\LaravelForms\Traits\Render;
 use Coyote6\LaravelForms\Traits\Rules;
+use Coyote6\LaravelForms\Traits\Suffix;
 use Coyote6\LaravelForms\Traits\Tags;
 use Coyote6\LaravelForms\Traits\Theme;
 use Coyote6\LaravelForms\Traits\Weighted;
@@ -17,7 +19,16 @@ use Coyote6\LaravelForms\Traits\Weighted;
 abstract class Field {
 
 
-	use Attributes, Weighted, Rules, GroupedWithFormButtons, LivewireModel, Theme, Render, Tags;
+	use Attributes, 
+		Weighted, 
+		Rules, 
+		GroupedWithFormButtons, 
+		LivewireModel, 
+		Theme, 
+		Render, 
+		Tags,
+		Prefix,
+		Suffix;
 	
 		
 	protected $type;
@@ -31,16 +42,22 @@ abstract class Field {
 	public $id;	
 	public $errorMessage;
 	public $helpText;
+	public $defaultTemplateDir = 'forms';
 	
 	
 	public function __construct (string $name) {
 		
 		$this->name = $name;
 		$this->setDefaultRules();
-		
 		$this->initTags();
-		$this->initTheme ('field');
 			
+	}
+	
+	
+	public function init () {
+		$this->initTagThemes();
+		$this->initTheme ('field');
+		return $this;
 	}
 	
 	
@@ -102,6 +119,11 @@ abstract class Field {
 		return $this->colonTag;
 	}
 	
+	public function hideColon () {
+		$this->colonTag->dontDisplayElement();
+		return $this;
+	}
+	
 	
 	public function label (string $label) {
 		$this->label = $label;
@@ -113,6 +135,7 @@ abstract class Field {
 		return $this;
 	}
 	
+
 	
 	protected function prerenderField () {
 		$this->labelTag->addAttribute ('for', $this->id);
@@ -133,6 +156,10 @@ abstract class Field {
 			'message' => $this->errorMessage,
 			'label' => __($this->label), // Translate the label
 			'help_text' => __($this->helpText), // Translate the help text
+			'livewireModel' => (property_exists ($this, 'livewireModel')) ? $this->livewireModel : false,
+			'prefix' => $this->prefix,
+			'suffix' => $this->suffix,
+			'form' => $this->form,
 			
 			'label_attributes' => $this->labelTag->renderAttributes(),
 			'label_text_attributes' => $this->labelTextTag->renderAttributes(),

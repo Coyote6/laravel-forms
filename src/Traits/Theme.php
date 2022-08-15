@@ -13,12 +13,47 @@ trait Theme {
 	protected bool $error = false;
 	
 	protected string $styleItem;
+	
+	
+	public function theme (string $theme = null) {
+		
+		if ($theme == null) {
+			$theme = config('forms.default-classes', 'default');
+		}
+		$this->theme = $theme;
+		
+		// Reinitiate the theme tags
+		// 
+		// Note:
+		// 		This currently will override any changes made
+		//		before calling the theme() method, so be sure
+		//		to call theme before any visual methods such
+		//		as hideColon() or adding classes.
+		//
+		//	ToDo:
+		//		Create a reinit method that just removes classes
+		//		that were initiated during the first init method.
+		//
+		if (method_exists($this, 'initTags')) {
+			$this->initTags();
+		}
+		if (method_exists($this, 'initTagThemes')) {
+			$this->initTagThemes();
+		}
+		$this->initTheme ('field');
+		if (property_exists ($this, 'fields') && is_array ($this->fields)) {
+			foreach ($this->fields as &$fields) {
+				$fields->theme($theme);
+			}
+		}
+		return $this;
+	}
 
 	
 	public function initTheme (string $item) {
 
 		$this->styleItem = $item;
-		$defaultClasses = config('laravel-forms.default-classes', true);
+		$defaultClasses = config('forms.default-classes', true);
 		if ($defaultClasses !== true) {
 			$defaultClasses = false;
 		}
@@ -101,7 +136,7 @@ trait Theme {
 					
 			case 'required-tag':
 				if ($defaultClasses) {
-					$this->addClass('required' . $this->field()->type);
+					$this->addClass('required required--' . $this->field()->type);
 				}
 				$this->setDefaultRequiredDisplay();
 				$this->addConfigurableClasses ('required', $this->field()->type);	
@@ -113,27 +148,65 @@ trait Theme {
 	}
 	
 	
+	protected function findParentThemeClasses ($theme, $tag, $element, $type = null) {
+		$config = 'forms.' . $theme . '--' . $tag . '--' . $element;
+		if (is_string ($type) && $type != '') {
+			$config .= '--' . $type;
+		}
+		
+		$classes = config ($config, false);
+		if ($classes) {
+			return $classes;
+		}
+		else {
+			$parentTheme = config ('forms.' . $theme . 'base-theme', false);
+			if ($parentTheme) {
+				return $this->findParentThemeClasss($parentTheme, $tag, $element);
+			}
+		}
+		return false;
+	}
+	
+	
 	protected function addConfigurableClasses (string $element, string $type = null) {
 		
 		$prefix = '';
+		$parentTheme = false;
 		if (is_string ($this->theme) && $this->theme != '') {
 			$prefix = $this->theme . '--';
+			$parentTheme = config ('forms.' . $this->theme . '--parent-theme', false);
 		}
 		
-		$config = 'laravel-forms.' . $prefix . 'classes--' . $element;
+
+		$config = 'forms.' . $prefix . 'classes--' . $element;
 		$classes = config ($config);
-		if (is_null ($classes) || !$classes) {
-			$classes = config ('laravel-forms.classes--' . $element, '');
+		
+		
+		
+		if ($parentTheme && (is_null ($classes) || $classes === false)) {
+			$classes = $this->findParentThemeClasses ($parentTheme, 'classes', $element);
 		}
+		
+		if (is_null ($classes) || $classes === false) {
+			$classes = config ('forms.classes--' . $element, '');
+		}
+		
 		if ((is_array ($classes) && count ($classes) > 0) || (is_string ($classes) && trim ($classes) != '')) {
 			$this->addClass ($classes);
 		}
 		
 		if (is_string ($type) && $type != '') {
+			
 			$classes = config ($config . '--' . $type);	
-			if (is_null ($classes) || !$classes) {
-				$classes = config ('laravel-forms.classes--' . $element . '--' . $type, '');
+					
+			if ($parentTheme && (is_null ($classes) || $classes === false)) {
+				$classes = $this->findParentThemeClasses ($parentTheme, 'classes', $element, $type);
 			}
+		
+			if (is_null ($classes) || $classes === false) {
+				$classes = config ('forms.classes--' . $element . '--' . $type, '');
+			}
+			
 			if ((is_array ($classes) && count ($classes) > 0) || (is_string ($classes) && trim ($classes) != '')) {
 				$this->addClass ($classes);
 			}
@@ -144,14 +217,21 @@ trait Theme {
 	protected function removeConfigurableClasses (string $element, string $type = null) {
 		
 		$prefix = '';
+		$parentTheme = false;
 		if (!is_string ($this->theme) || $this->theme == '') {
 			$prefix = $this->theme . '--';
+			$parentTheme = config ('forms.' . $this->theme . '--base-theme', false);
 		}
 		
-		$config = 'laravel-forms.' . $prefix . 'remove-classes--' . $element;
+		$config = 'forms.' . $prefix . 'remove-classes--' . $element;
 		$classes = config ($config);
-		if (is_null ($classes) || !$classes) {
-			$classes = config ('laravel-forms.remove-classes--' . $element, '');
+		
+		if ($parentTheme && (is_null ($classes) || $classes === false)) {
+			$classes = $this->findParentThemeClasses ($parentTheme, 'remove-classes', $element);
+		}
+		
+		if (is_null ($classes) || $classes === false) {
+			$classes = config ('forms.remove-classes--' . $element, '');
 		}
 		if ((is_array ($classes) && count ($classes) > 0) || (is_string ($classes) && trim ($classes) != '')) {
 			$this->removeClass ($classes);
@@ -159,8 +239,8 @@ trait Theme {
 
 		if (is_string ($type) && $type != '') {
 			$classes = config ($config . '--' . $type);
-			if (is_null ($classes) || !$classes) {
-				$classes = config ('laravel-forms.remove-classes--' . $element . '--' . $type, '');
+			if (is_null ($classes) || $classes === false) {
+				$classes = config ('forms.remove-classes--' . $element . '--' . $type, '');
 			}
 			if ((is_array ($classes) && count ($classes) > 0) || (is_string ($classes) && trim ($classes) != '')) {
 				$this->removeClass ($classes);
@@ -196,7 +276,7 @@ trait Theme {
 	
 	protected function setDefaultErrorIconDisplay () {
 		
-		$default = config ('laravel-forms.display--error-icon', true);
+		$default = config ('forms.display--error-icon', true);
 		if (is_bool ($default)) {
 			$this->display = $default;
 		}
@@ -208,7 +288,7 @@ trait Theme {
 	
 	protected function setDefaultColonTagDisplay () {
 
-		$default = config ('laravel-forms.display--colon-tag', false);
+		$default = config ('forms.display--colon-tag', false);
 		if (is_bool ($default)) {
 			$this->display = $default;
 		}
@@ -221,7 +301,7 @@ trait Theme {
 	
 	protected function setDefaultRequiredDisplay () {
 		
-		$default = config ('laravel-forms.display--required-tag', true);
+		$default = config ('forms.display--required-tag', true);
 		if (is_bool ($default)) {
 			$this->display = $default;
 		}

@@ -4,6 +4,7 @@
 namespace Coyote6\LaravelForms\Traits;
 
 
+use Coyote6\LaravelForms\Form\Autofill;
 use Coyote6\LaravelForms\Form\Button;
 use Coyote6\LaravelForms\Form\Checkbox;
 use Coyote6\LaravelForms\Form\Email;
@@ -14,6 +15,7 @@ use Coyote6\LaravelForms\Form\Form;
 use Coyote6\LaravelForms\Form\Hidden;
 use Coyote6\LaravelForms\Form\Html;
 use Coyote6\LaravelForms\Form\Image;
+use Coyote6\LaravelForms\Form\LivewireComponent;
 use Coyote6\LaravelForms\Form\Number;
 use Coyote6\LaravelForms\Form\Password;
 use Coyote6\LaravelForms\Form\Radio;
@@ -36,19 +38,24 @@ trait AddFields {
 			$field instanceof Radio &&
 			(!$this instanceof Radios || !$this instanceof FieldGroup)
 		) {
+			
 			$fieldGroup = Radios::get($field->name);
 			$fieldGroup->addField($field);
 			$fieldGroup->parent = $this;
 			$fieldGroup->cache = $this->cache;
 			$fieldGroup->id = Form::uniqueId ($fieldGroup->parent->id, $fieldGroup->name);
 			$fieldGroup->theme = $this->theme;
+
 			if ($fieldGroup->parent instanceof Form) {
 				$fieldGroup->form = $fieldGroup->parent;
 			}
 			else {
 				$fieldGroup->form = $fieldGroup->parent->form;
 			}
+			
+			$fieldGroup->init();
 			$this->fields[$fieldGroup->name] = $fieldGroup;
+			
 		}
 		else {
 			
@@ -62,6 +69,9 @@ trait AddFields {
 			else {
 				$field->form = $field->parent->form;
 			}
+
+			$field->init();
+			
 			if (!$field instanceof Radio) {
 				$this->fields[$field->name] = $field;
 
@@ -85,8 +95,18 @@ trait AddFields {
 		else {
 			$fieldGroup->form = $fieldGroup->parent->form;
 		}
+
+		$fieldGroup->init();
 		$this->fields[$fieldGroup->name] = $fieldGroup;
+		
 		return $this;
+	}
+	
+	
+	public function autofill ($name) {
+		$field = new Autofill ($name);
+		$this->addField ($field);
+		return $field;
 	}
 	
 	
@@ -150,6 +170,13 @@ trait AddFields {
 		return $field;
 	}
 	
+	public function livewireComponent ($name) {
+		$field = new LivewireComponent ($name);
+		$this->addField ($field);
+		return $field;
+	}
+	
+	
 	public function number ($name) {
 		$field = new Number ($name);
 		$this->addField($field);
@@ -205,11 +232,78 @@ trait AddFields {
 		return $this->fields;
 	}
 	
+	
+	protected function flattenFields ($fields) {
+		$flatten = [];
+		foreach ($fields as $f) {
+			if (is_callable ([$f, 'fields'])) {
+				$flatten[] = $f;
+				foreach ($this->flattenFields ($f->fields()) as $child) {
+					$flatten[] = $child;
+				}
+			}
+			else {
+				$flatten[] = $f;
+			}
+		}
+		return $flatten;
+	}
+	
+	
+	protected function sortFields () {
+		$toSort = [];
+		$orderAdded = 0;
+		foreach ($this->fields as $name => $field) {
+			$orderAdded++;
+			$toSort[] = [
+				'name' => $name,
+				'weight' => $field->weight,
+				'field' => $field,
+				'order-added' => $orderAdded
+			];
+		}
+	
+		$collection = collect ($toSort);
+		$sorted = $collection->sortBy([
+			['weight','asc'],
+			['order-added','asc'],
+		])->mapWithKeys(function ($item) {
+			return [$item['name'] => $item['field']];
+		});
+		
+		return $sorted;
+	}
+	
+	
 	public function getField (string $name) {
 		if (isset ($this->fields[$name])) {
 			return $this->fields[$name];
 		}
 		return false;
+	}
+	
+	
+	public function keyedFields () {
+		$flat = $this->flattenFields ($this->fields);
+		$keyed = [];
+		foreach ($flat as $f) {
+			$keyed[$f->name] = $f;
+		}
+		return $keyed;
+	}
+	
+	
+	public function findField (string $name) {
+		$keyed = $this->keyedFields();
+		if (isset ($keyed[$name])) {
+			return $keyed[$name];
+		}
+		return false;
+	}
+	
+	
+	public function find (string $name) {
+		return $this->findField ($name);
 	}
 	
 }

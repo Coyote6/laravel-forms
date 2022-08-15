@@ -30,21 +30,17 @@ class FieldGroup {
 	public $parent;
 	public $form;
 	public $helpText;
+	public $defaultTemplateDir = 'forms';
+	public $hideChildColons;					// Null will keep the defaults, true or false will override the defaults
 
 	
 	public function __construct (string $name) {
 		
 		$this->name = $name;
-		
-		$this->formItemTag = new FieldItem ($this, 'form-item');
 		$this->initTags();
-		$this->initTheme ('field');
-		
-		if ($this->defaultClasses) {
-			$this->formItemTag->addClass ('field-group');
-		}
 				
 	}
+	
 	
 	public function __get ($name) {
 		if (in_array ($name, ['name', 'type', 'weight', 'template'])) {
@@ -68,6 +64,18 @@ class FieldGroup {
 #		}
 #		return $rules;
 #	}
+
+	public function init() {
+	
+		$this->initTagThemes();
+		$this->initTheme ('field');
+		
+		if ($this->defaultClasses) {
+			$this->formItemTag->addClass ('field-group');
+		}
+		return $this;
+
+	}
 	
 	public function isRequired () {
 		return false;
@@ -113,6 +121,33 @@ class FieldGroup {
 	public function colonTag () { 
 		return $this->colonTag;
 	}	
+
+	public function hideColon (bool $includeChildElements = false) {
+		$this->colonTag->dontDisplayElement();
+		if ($includeChildElements) {
+			$this->hideChildColons();
+		}
+		return $this;
+	}
+	
+	public function showColon (bool $includeChildElements = false) {
+		$this->colonTag->dontDisplayElement();
+		if ($includeChildElements) {
+			$this->showChildColons();;
+		}
+		return $this;
+	}
+
+	public function hideChildColons () {
+		$this->hideChildColons = true;
+		return $this;
+	}
+	
+	public function showChildColons () {
+		$this->hideChildColons = false;
+		return $this;
+	}
+	
 	
 	public function label (string $label) {
 		$this->label = $label;
@@ -137,9 +172,19 @@ class FieldGroup {
 	
 	
 	protected function prerenderField () {
+		
 		$this->formItemTag->addAttribute ('id', $this->id . '--fieldgroup');
 		$this->labelTag->addAttribute ('for', $this->id);
 		$this->addAttribute ('id', $this->id);
+		
+		if ($this->hideChildColons) {
+			foreach ($this->fields as &$field) {
+				$field->colonTag()->dontDisplayElement();
+			}
+		}
+		else if ($this->hideChildColons === false) {
+			$field->colonTag()->displayElement();
+		}
 	}
 	
 	
@@ -156,6 +201,7 @@ class FieldGroup {
 			'message' => $this->errorMessage,
 			'label' => __($this->label), // Translate the label
 			'help_text' => __($this->helpText), // Translate the help text
+			'livewireModel' => (property_exists ($this, 'livewireModel')) ? $this->livewireModel : false,
 			
 			'label_attributes' => $this->labelTag->renderAttributes(),
 			'label_text_attributes' => $this->labelTextTag->renderAttributes(),

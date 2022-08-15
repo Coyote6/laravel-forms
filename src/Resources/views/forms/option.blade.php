@@ -1,1 +1,1 @@
-<option {!! $attributes !!}>{{ $label }}</option>
+<option {{ $attributes }}>{{ $label }}</option>

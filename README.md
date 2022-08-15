@@ -319,14 +319,14 @@ The first which is mentioned above is to edit the config file and overriding the
 
 The other is to copy the files from the -/src/Resources/views/- directory (sorry haven't wrote the publish command yet, but will.) and move any of these files into -resources/views/- directory in your app. The package will check your directory for files and use it over the default files. Be sure to set caching to false on either your individual form/field or set the master caching to false in the config.  The template naming conventions are as follows:
 
--resources/views/forms.{$template}--{$element_id}.blade.php-
--resources/views/forms.{$template}--{$element_name}.blade.php-
--resources/views/forms.{$theme}.{$template}.blade.php-
--resources/views/forms.{$template}--{$theme}.blade.php-
--vendor/coyote6/laravel-forms/src/resources/views/forms.{$theme}.{$template}.blade.php-
--vendor/coyote6/laravel-forms/src/resources/views/forms.{$template}--{$theme}.blade.php-
--resources/views/forms.{$template}.blade.php-
--vendor/coyote6/laravel-forms/src/resources/views/forms.{$template}.blade.php-
+-resources/views/forms/{$template}--{$element_id}.blade.php-
+-resources/views/forms/{$template}--{$element_name}.blade.php-
+-resources/views/forms/{$theme}/{$template}.blade.php-
+-resources/views/forms/{$template}--{$theme}.blade.php-
+-vendor/coyote6/laravel-forms/src/resources/views/forms/{$theme}/{$template}.blade.php-
+-vendor/coyote6/laravel-forms/src/resources/views/forms/{$template}--{$theme}.blade.php-
+-resources/views/forms/{$template}.blade.php-
+-vendor/coyote6/laravel-forms/src/resources/views/forms/{$template}.blade.php-
 
 You can merge your custom classes to any of the attribute variables in the templates:
 ```php
@@ -344,6 +344,10 @@ $form = new Form (['theme' => 'minimal']);
 
 If you just with to override the templates without setting classes from the config file, then you can call it anytime before rendering or validating.
 ```php
+$form->theme ('minimal');		// Using the method option is chainable
+$field->theme ('minimal');
+
+// Or set the property directly.
 $form->theme = 'minimal';
 $field->theme = 'minimal';
 ```
@@ -403,6 +407,101 @@ $form->fieldGroup ('field-name')
 $form->file ('field-name')
 	->label ('Upload File');
 
+```
+
+##### Setting Default Value, Removing Images, & Retrieving Image w/o Livewire
+###### Single File
+```php
+public function storeFallback () {
+
+	$upload = request()->file('image');
+	if (!is_null ($upload) && $upload->isValid()) {
+		// Save Image
+	}
+	
+	$imgs = request()->input('imageRemove');
+	if (!is_null ($imgs) && is_array ($imgs)) {
+		$img = current ($imgs);
+		if ($img == '1') {
+			// Remove image
+		}
+	}
+	
+}
+	
+	
+protected function generateForm () {
+	
+	$form = form();
+	$form->action('/post/path');
+	
+	$default = '/path/to/image.jpg';
+	$form->image('image')
+		->label('Image')
+		->value($default);
+	
+	return $form;
+}
+```
+
+
+###### Multi File
+```php
+public function storeFallback () {
+
+	$uploads = request()->file('image');
+	if (!is_null ($uploads) && is_array ($uploads)) {
+		foreach ($uploads as $key => $upload) {
+			if ($upload->isValid()) {
+				// Save Image
+			}
+		}
+	}
+	
+	$imgs = request()->input('imageRemove');
+	if (!is_null ($imgs) && is_array ($imgs)) {
+		foreach ($imgs as $key => $img) {
+			if ($img == '1') {
+				// Remove that image
+			}
+		}
+	}
+	
+}
+	
+protected function generateForm () {
+	
+	$form = form();
+	$form->action('/post/path');
+	
+	$default = '/path/to/image.jpg';
+	$form->image('image')
+		->label('Image')
+		->multi()			// Alias to multiple ($maxFiles)
+		->value($default);
+	
+	return $form;
+}
+```
+
+##### Setting Default Value, Removing Images, & Retrieving Image w/ Livewire
+###### Multi File
+
+The field will add 3 additional properties to the Livewire component.  There is are properties for previously uploaded files, previously uploaded files that are removed, and all files that up-to-date. These properties can be accessed by adding 'PreviousUploads', 'Removed', and 'All' to the Livewire property. For example, if the property is set to $this->image then the values can be accessed via $this->imagePreviousUploads, $this->imageRemoved, and $this->imageAll respectively. Note: $this->imageAll may not be updated until after the form is generated or validated.
+
+```php
+public function store () {
+
+	$this->validate();
+	foreach ($this->images as $img) {
+		// Save Image
+	}
+	
+	foreach ($this->imagesRemoved as $hash => $img) {
+		// Remove existing image
+	}
+	
+}
 ```
 
 #### Hidden - &lt;input type="hidden"&gt;
@@ -477,11 +576,14 @@ $form->radios ('field-name')
 
 $r2 = $form->radios ('field-name')
 	->required()
-	->value ('o1');  // Set a default value
+	->value ('o1');			// Set a default value
 	    
 $rb1 = new Radio ('field-name');
 $rb1->label ('Option 1')
-	->value ('o1');
+	->value ('o1')
+	->init(); 				// When building directly from field classes,
+							// initiating the theme/classes is optional, 
+							// but required to add default and theme classes
 	    
 $h1 = new Html ('field-name--html-1');
 $h1->value ('Cool HTML info about option 1');
@@ -489,6 +591,8 @@ $h1->value ('Cool HTML info about option 1');
 $rb2 = new Radio ('field-name');
 $rb2->label ('Option 2')
 	->value ('o2');
+	->theme ('minimal')		// You must set the theme before calling init()
+	->init();
 
 $h2 = new Html ('field-name--html-2');
 $h2->value ('Cool HTML info about option 2');

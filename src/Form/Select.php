@@ -14,6 +14,7 @@ class Select extends Field {
 	
 	protected $type = 'select';
 	protected $template = 'select';
+	protected $addDefault = true;
 
 
 	use Options;	
@@ -30,26 +31,41 @@ class Select extends Field {
 		}
 		else {
 			$this->rules['array'] = 'array';
+			if (!isset ($this->rules['exists'])) {
+				$this->rules['in'] = Rule::in($this->optionValues());
+			}
 		}
 		return $this->rules;
 	}
 	
-	
-	public function multipleSelect (string $table, string $column = 'id') {
-		$this->addAttribute ('multiple');
-		$this->addRule ('exists:' . $table . ',' . $column);
+	public function noDefaultOption () {
+		$this->addDefault = false;
 		return $this;
 	}
 	
-	public function multiple (string $table, string $column = 'id') {
+	public function addDefaultOption () {
+		$this->addDefault = true;
+		return $this;
+	}
+	
+	
+	public function multipleSelect (string $table = null, string $column = 'id') {
+		$this->addAttribute ('multiple');
+		if (is_string ($table) && $table != '') {	
+			$this->addRule ('exists:' . $table . ',' . $column);
+		}
+		return $this;
+	}
+	
+	public function multiple (string $table = null, string $column = 'id') {
 		return $this->multipleSelect ($table, $column);
 	}
 	
-	public function multi (string $table, string $column = 'id') {
+	public function multi (string $table = null, string $column = 'id') {
 		return $this->multipleSelect ($table, $column);
 	}
 	
-	public function multiSelect (string $table, string $column = 'id') {
+	public function multiSelect (string $table = null, string $column = 'id') {
 		return $this->multipleSelect ($table, $column);
 	}
 
@@ -63,7 +79,7 @@ class Select extends Field {
 	protected function prerender () {
 		
 		$val = old ($this->name, $this->value);
-
+		
 		// Must shutoff for 'selected' for Livewire
 		//
 		// @see https://github.com/livewire/livewire/issues/998
@@ -75,26 +91,29 @@ class Select extends Field {
 	
 		$hasDefault = false;
 		foreach ($this->options as $o) {
-			if (!$this->hasAttribute('multiple')) {
-				if ($o->value == $val) {
-					$o->addAttribute('selected');
-				}
-			}
 			
-			else if (is_array ($val) && !$isLivewireReturnUrl) {
-				
-				foreach ($val as $v) {
-					if ($o->value == $v) {
+			if (!$isLivewireReturnUrl) {
+				if (!$this->hasAttribute('multiple')) {
+					if ($o->value == $val) {
 						$o->addAttribute('selected');
 					}
 				}
+				else if (is_array ($val)) {
+					
+					foreach ($val as $v) {
+						if ($o->value == $v) {
+							$o->addAttribute('selected');
+						}
+					}
+				}
 			}
+			
 			if ($o->value == '') {
 				$hasDefault = true;
 			}
 		}
 		
-		if (!$hasDefault && !$this->hasAttribute('multiple')) {
+		if (!$hasDefault && !$this->hasAttribute ('multiple') && $this->addDefault) {
 			$default = new Option();
 			$default->value = '';
 			$default->label = '-- Please Select --';

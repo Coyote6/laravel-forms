@@ -5,6 +5,7 @@ namespace Coyote6\LaravelForms\Form;
 
 
 use Coyote6\LaravelForms\Form\FieldItem;
+use Coyote6\LaravelForms\Form\File;
 use Coyote6\LaravelForms\Traits\Attributes;
 use Coyote6\LaravelForms\Traits\AddFields;
 use Coyote6\LaravelForms\Traits\LivewireRules;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\MessageBag;
 use Illuminate\Support\ViewErrorBag;
+use Illuminate\Support\Facades\Validator;
 
 class Form {
 
@@ -35,6 +37,7 @@ class Form {
 	
 	public $submitButton = true;
 	public $action = '#';
+	public $defaultTemplateDir = 'forms';
 	
 	public $renderedFields = [];
 	public $id;
@@ -55,7 +58,7 @@ class Form {
 			
 		}
 		else if (is_array ($options)) {
-			
+
 			// Manually set the form id.
 			if (isset ($options['id'])) {
 				$this->id = $options['id'];
@@ -79,10 +82,22 @@ class Form {
 				$this->theme = $options['theme'];
 			}
 			
+			// Default Template Dir
+			if (isset ($options['template-dir']) && is_string ($options['template-dir']) && $options['template-dir'] != '') {
+				$this->defaultTemplateDir = $options['template-dir'];
+			}
+			
 		}
 		
 		$this->errorMessageContainerTag = new FieldItem ($this, 'form--error-message-container');
 		$this->errorMessageTag = new FieldItem ($this, 'form--error-message');
+		
+		$this->errorMessageContainerTag->theme = $this->theme;
+		$this->errorMessageTag->theme = $this->theme;
+		
+		$this->errorMessageContainerTag->init();
+		$this->errorMessageTag->init();
+
 		$this->initTheme('form');
 		
 		
@@ -93,22 +108,56 @@ class Form {
 		
 		$class = class_basename (__CLASS__);
 		$function = null;
+		$aliasFile = false;
 		
 		$backtrace = debug_backtrace();
+		if (isset ($backtrace[1])) {
+			if (isset ($backtrace[1]['class'])) {
+				$aliasFileName = substr ($backtrace[1]['file'], -53);
+				if ($aliasFileName == '/vendor/coyote6/laravel-forms/src/Helpers/Aliases.php') {
+					$aliasFile = true;
+				}
+			}
+		}
+		
 		if (isset ($backtrace[2])) {
-			if (isset ($backtrace[2]['class'])) {
+			
+			if ($aliasFile && isset ($backtrace[3]['class'])) {
+				$class = class_basename ($backtrace[3]['class']);
+			}
+			else if (isset ($backtrace[2]['class'])) {
 				$class = class_basename ($backtrace[2]['class']);
 			}
-			if (isset ($backtrace[2]['function'])) {
+			
+			if ($aliasFile && isset ($backtrace[3]['function'])) {
+				$function = $backtrace[3]['function'];
+			}
+			else if (isset ($backtrace[2]['function'])) {
 				$function = $backtrace[2]['function'];
 			}
+			$checkGenerateFunction = strtolower($function);
+			$isGenerateFunction = (strpos ($checkGenerateFunction, 'generate') !== false && strpos ($checkGenerateFunction, 'form') !== false);
+			
+			if (
+				$aliasFile && $isGenerateFunction && 
+				isset ($backtrace[4]) && isset ($backtrace[4]['function'])
+			) {
+				$function = $backtrace[4]['function'];
+			}
+			else if (
+				$isGenerateFunction && 
+				isset ($backtrace[3]) && isset ($backtrace[3]['function'])
+			) {
+				$function = $backtrace[3]['function'];
+			}	
+			
 		}
 		
 		$id = $this->formatIdStr ($class);
 		if (is_string ($function) && $function != '') {
 			$id .= '--' . $this->formatIdStr ($function);
 		}
-		
+
 		$this->id = $id;
 		
 		return $this;
@@ -169,19 +218,140 @@ class Form {
 
 		foreach ($this->flattenFields ($this->fields) as $field) {
 			if (is_callable ([$field, 'rules'])) {
+				
 				$name = $field->name;
 				$r = $field->rules();
 				if (is_array ($r) && count ($r) > 0) {
-					$rules[$name] = $r;
+					if ($field instanceof File) {
+						$frules = [];
+						foreach ($r as $frn => $frv) {
+							if (in_array ($frn, ['nullable', 'required', 'sometimes'])) {
+								$rules[$name][$frn] = $frv;
+							}
+							else {
+/*
+								if ($field->isMulti()) {
+						$name .= ;
+					}
+*/
+								$frules[$frn] = $frv;
+							}
+						}
+						if (count ($frules) > 0) {
+							$rules[$name . '.*'] = $frules;
+						}
+					}
+					else {
+						$rules[$name] = $r;
+					}
 				}
+				
 			}
 		}
+
 		return $rules;
 	}
 	
 	
-	public function validate () {
-		return request()->validate ($this->rules());
+	public function fieldsByName () {
+		static $fields;
+		if (is_null ($fields)) {
+			$fields = [];
+			foreach ($this->flattenFields ($this->fields) as $f) {
+				$name = (is_callable ([$f, 'getLw']) && $this->isLwRoute() && $f->getLw() != '') ? $f->getLw() : $f->name;
+				$fields[$name] = $f;
+			}
+		}
+		return $fields;
+	}
+	
+	
+	
+	public function prepareForValidation ($attributes) {
+		
+		$fields = $this->fieldsByName();
+		foreach ($attributes as $key => $value) {
+			
+			if (is_object ($value) && $value instanceof Model) {
+				$class = get_class ($value);
+				$clone = new $class ();
+				foreach ($value->getAttributes() as $k => $v) {
+					$name = $key . '.' . $k;
+					$clone->$k = $v;
+					if (isset ($fields[$name])) {
+						if (is_callable ([$fields[$name], 'shouldPrepend']) && $fields[$name]->shouldPrepend()) {
+							$clone->$k = $fields[$name]->prefix . $clone->$k;
+						}
+						if (is_callable ([$fields[$name], 'shouldAppend']) && $fields[$name]->shouldAppend()) {
+							$clone->$k .= $fields[$name]->suffix;
+						}
+					}					
+				}
+				$attributes[$key] = $clone;
+			}
+			else if (!is_object ($value)) {
+				if (isset ($fields[$key])) {
+					if (is_callable ([$fields[$key], 'shouldPrepend']) && $fields[$key]->shouldPrepend()) {
+						$attributes[$key] = $fields[$key]->prefix . $value;
+					}
+					if (is_callable ([$fields[$key], 'shouldAppend']) && $fields[$key]->shouldAppend()) {
+						$attributes[$key] .= $fields[$key]->suffix;
+					}
+				}
+			}
+		}
+
+		return $attributes;
+	}
+	
+	
+	
+	public function validate (array $data = null) {
+		if (!is_array ($data) || count ($data) == 0) {
+			$data = request()->all();
+		}
+		$data = $this->prepareForValidation ($data);
+		$data = Validator::make ($data, $this->rules())->validate();
+		$data = $this->postValidation ($data);
+		return $data;
+		
+	}
+
+	
+	
+	public function postValidation ($attributes) {
+
+		$fields = $this->fieldsByName();
+		foreach ($attributes as $key => $value) {
+			if (is_array ($value)) {
+				foreach ($value as $k => $v) {
+					$name = $key . '.' . $k;
+					if (isset ($fields[$name])) {
+						if (is_callable ([$fields[$name], 'shouldPrepend']) && $fields[$name]->shouldPrepend() && !$fields[$name]->isTempPrepend()) {
+							$$attributes[$key][$k] = $fields[$name]->prefix . $v;
+						}
+						if (is_callable ([$fields[$name], 'shouldAppend']) && $fields[$name]->shouldAppend() && !$fields[$name]->isTempAppend()) {
+							$$attributes[$key][$k]  .= $fields[$name]->suffix;
+						}
+				
+					}
+					
+				}
+			}
+			else {
+				if (isset ($fields[$key])) {
+					if (is_callable ([$fields[$key], 'isTempPrepend']) && $fields[$key]->isTempPrepend()) {
+						$$attributes[$key] = $fields[$name]->prefix . $v;
+					}
+					if (is_callable ([$fields[$key], 'isTempAppend']) && $fields[$key]->isTempAppend()) {
+						$$attributes[$key] .= $fields[$name]->suffix;
+					}
+				}
+			}
+		}
+		
+		return $attributes;
+
 	}
 
 	
@@ -205,13 +375,51 @@ class Form {
 	
 	
 	protected function setError ($field) {
-		$field->formItemTag()->setError();
-		$field->labelContainerTag()->setError();
-		$field->labelTag()->setError();
-		$field->fieldContainerTag()->setError();
-		$field->setError();
-		$field->errorMessageContainerTag()->setError();
-		$field->errorMessageTag()->setError();
+		if ($field->type == 'hidden') {
+			$this->errors()->add('form', 'An error occurred on the form and it is no longer valid. Please try again.');
+		}
+		else {
+			$field->formItemTag()->setError();
+			$field->labelContainerTag()->setError();
+			$field->labelTag()->setError();
+			$field->fieldContainerTag()->setError();
+			$field->setError();
+			$field->errorMessageContainerTag()->setError();
+			$field->errorMessageTag()->setError();
+		}
+	}
+	
+	
+	public function setFormError ($message) {
+		$this->errors()->add('form', $message);
+	}	
+	
+	protected function checkForError ($errorName, $field) {
+		if ($this->hasError ($errorName)) {
+
+			$this->setError ($field);
+			$field->errorMessage = $this->errors()->first($errorName);
+
+			// If it exists, error the confirmed field as well.
+			if (is_callable ([$field, 'rules']) && is_callable([$field, 'hasConfirmField']) && $field->hasConfirmField()) {
+				
+				if (key_exists ('confirmed', $field->rules())) {
+					$confirmFieldName = $field->name . '_confirmation';
+					if (isset ($this->fields[$confirmFieldName])) {
+						$this->setError ($this->fields[$confirmFieldName]);
+					}
+				}
+
+				// If it exists, error the field that should have the same value as well.
+				if (key_exists ('same', $field->rules())) {
+					$sameField = $field->rules['same'];
+					$explode = explode (':', $sameField);
+					if (isset ($explode[1]) && isset ($this->fields[$explode[1]])) {
+						$this->setError ($this->fields[$explode[1]]);
+					}
+				}
+			}
+		}
 	}
 	
 	
@@ -222,6 +430,10 @@ class Form {
 #		}
 #	}
 	
+	
+	public function countFields () {
+		return count ($this->flattenFields($this->fields));
+	}
 	
 	public function addFieldError (string $fieldName, string $errorMessage) {
 		if ($this->getField ($fieldName)) {
@@ -237,45 +449,13 @@ class Form {
 		}
 		return $this;
 	}
-	
-	
-	protected function flattenFields ($fields) {
-		$flatten = [];
-		foreach ($fields as $f) {
-			if (is_callable ([$f, 'fields'])) {
-				$flatten[] = $f;
-				foreach ($this->flattenFields ($f->fields()) as $child) {
-					$flatten[] = $child;
-				}
-			}
-			else {
-				$flatten[] = $f;
-			}
-		}
-		return $flatten;
-	}
-	
-	
-	protected function sortFields () {
-		$toSort = [];
-		foreach ($this->fields as $name => $field) {
-			$toSort[] = [
-				'name' => $name,
-				'weight' => $field->weight,
-				'field' => $field
-			];
-		}
-		$collection = collect ($toSort);
-		return $collection->sortBy('weight', SORT_NUMERIC)->mapWithKeys(function ($item) {
-			return [$item['name'] => $item['field']];
-		});
-	}
+
 	
 	
 	public function renderedField (string $field) {
 		$this->renderedFields[$field] = $field;
 	}
-	
+		
 	
 	public function templateVariables () {
 		
@@ -288,6 +468,10 @@ class Form {
 		$hasFileField = false;
 		$submitButtons = [];
 		$hasConfirmField = false;
+#
+# Testing
+#
+#		if (isset ($_POST) && count ($_POST) > 0) dd ($_POST);
 
 		$flattenedFields = $this->flattenFields ($this->fields);
 		foreach ($flattenedFields as $f) {
@@ -303,32 +487,12 @@ class Form {
 			//
 			// Check for errors and set the classes if any are found.
 			//
-			$errorName = (is_callable ([$f, 'getLw'])) ? $f->getLw() : $f->name;
+			$errorName = (is_callable ([$f, 'getLw']) && $this->isLwRoute()) ? $f->getLw() : $f->name;
 
-			if ($this->hasError ($errorName)) {
-
-				$this->setError ($f);
-				$f->errorMessage = $this->errors()->first($errorName);
-
-				// If it exists, error the confirmed field as well.
-				if (is_callable ([$f, 'rules']) && is_callable([$f, 'hasConfirmField']) && $f->hasConfirmField()) {
-					
-					if (key_exists ('confirmed', $f->rules())) {
-						$confirmFieldName = $f->name . '_confirmation';
-						if (isset ($this->fields[$confirmFieldName])) {
-							$this->setError ($this->fields[$confirmFieldName]);
-						}
-					}
-	
-					// If it exists, error the field that should have the same value as well.
-					if (key_exists ('same', $f->rules())) {
-						$sameField = $f->rules['same'];
-						$explode = explode (':', $sameField);
-						if (isset ($explode[1]) && isset ($this->fields[$explode[1]])) {
-							$this->setError ($this->fields[$explode[1]]);
-						}
-					}
-				}
+			$this->checkForError ($errorName, $f);
+			if (!$f->hasError() && $f instanceof File && $f->isMulti()) {
+				$errorName .= '.*';
+				$this->checkForError($errorName, $f);
 			}
 			
 			//
@@ -410,10 +574,11 @@ class Form {
 			$this->addAttribute ('enctype', 'multipart/form-data');
 		}
 		
-		$display_error_container_tag = config ('laravel-forms.display--form-error-message-container-tag', true);
+		$display_error_container_tag = config ('forms.display--form-error-message-container-tag', true);
 		if (!is_bool ($display_error_container_tag)) {
 			$display_error_container_tag = true;
 		}
+		
 		
 		return [
 			'id' => $this->id,
@@ -422,6 +587,7 @@ class Form {
 			'method' => $this->method,
 			'hidden_fields' => $hidden,
 			'has_confirm_field' => $hasConfirmField,
+			'has_error' => ($this->errors()->count() > 0),
 			'error_message_container_attributes' => $this->errorMessageContainerTag->renderAttributes(),
 			'error_message_attributes' => $this->errorMessageTag->renderAttributes(),
 			'is_livewire_form' => $this->isLwForm()

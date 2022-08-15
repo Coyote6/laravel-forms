@@ -44,11 +44,11 @@ class Button extends Field {
 		}
 		
 		if (is_string ($this->content)) {
-			$allowed = '<span><br><strong><em><b><i><img>';
+		//	$allowed = '<span><br><strong><em><b><i><img><x-*>';
 			// Run twice just in case someone splits tags such as '<s<div>cript>alert(1);</s<div>cript>'.
 			// This is not full proof just an extra catch.
 			//
-			$this->content = strip_tags (strip_tags ($this->content, $allowed), $allowed); 
+		//	$this->content = strip_tags (strip_tags ($this->content, $allowed), $allowed); 
 		}
 				
 		$this->labelTag->addAttribute ('for', $this->id);
