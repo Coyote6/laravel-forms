@@ -25,12 +25,16 @@
 	@if ($has_confirm_field && $is_livewire_form)
 		@push('scripts')
 			<script>
-				Livewire.on('updatedConfirmation', id => {
-					var el = document.getElementById(id);
-					var	val = el.value;
-					var name = el.getAttribute('data-model');
-				//	console.log (val, name);
-					@this.set(name, val);
+				document.addEventListener('livewire:load', function () {
+					if (!window.formsUpdatedConfirmationLoaded) {
+						window.formsUpdatedConfirmationLoaded = true;
+						Livewire.on('updatedConfirmation', id => {
+							var el = document.getElementById(id);
+							var	val = el.value;
+							var name = el.getAttribute('data-model');
+							@this.set(name, val);
+						});
+					}
 				});
 			</script>
 		@endpush

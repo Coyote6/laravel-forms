@@ -119,7 +119,7 @@ class Form {
 				}
 			}
 		}
-		
+
 		if (isset ($backtrace[2])) {
 			
 			if ($aliasFile && isset ($backtrace[3]['class'])) {
@@ -158,7 +158,7 @@ class Form {
 			$id .= '--' . $this->formatIdStr ($function);
 		}
 
-		$this->id = $id;
+		$this->id = static::uniqueId ($id);
 		
 		return $this;
 		
@@ -175,18 +175,24 @@ class Form {
 	}
 
 	
-	public static function uniqueId (string $parentId, string $name) {
+	public static function uniqueId (string $parentId, string $name = null) {
 		
 		static $ids;
-
-		$id = $parentId . '--' . $name;
-		$count = 1;
-		while (isset ($ids[$id])) {
-			$id = $parentId . '--' . $name . '--' . $count;
-			$count++; 
+		
+		$subName = '';
+		if (is_string ($name) && $name != '') {
+			$subName = '--' . $name;
 		}
 
+		$id = $parentId . $subName;
+		$count = 1;
+		while (isset ($ids[$id])) {
+			$id = $parentId . $subName . '--' . $count;
+			$count++; 
+		}
+		
 		$ids[$id] = $id;
+
 		return $id;
 		
 	}
