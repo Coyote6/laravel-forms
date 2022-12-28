@@ -18,12 +18,24 @@ class Checkbox extends Input {
 	public function rules () {
 		
 		if (is_null ($this->value)) {
-			$this->value = 1;
+			$this->value = true;
 		}
 		
-		$vals = [$this->value];
+		if (is_bool ($this->value)) {
+			$vals[] = true;
+		}
+		else if (is_string ($this->value)) {
+			$vals = [$this->value];
+		}
+		
 		if (!isset ($this->rules['required'])) {
-			$vals[] = '';
+			if (is_string ($this->value)) {
+				$vals[] = '';
+			}
+			else {
+				$vals[] = false;
+			}
+
 		}
 		else {
 			$this->rules['accepted'] = 'accepted';
