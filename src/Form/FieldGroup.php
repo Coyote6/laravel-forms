@@ -7,6 +7,7 @@ namespace Coyote6\LaravelForms\Form;
 use Coyote6\LaravelForms\Traits\Attributes;
 use Coyote6\LaravelForms\Traits\AddFields;
 use Coyote6\LaravelForms\Traits\GroupedWithFormButtons;
+use Coyote6\LaravelForms\Traits\HelpText;
 use Coyote6\LaravelForms\Traits\LivewireRules;
 use Coyote6\LaravelForms\Traits\Render;
 use Coyote6\LaravelForms\Traits\Tags;
@@ -19,7 +20,14 @@ use Illuminate\Database\Eloquent\Model;
 class FieldGroup {
 
 
-	use Attributes, AddFields, Weighted, GroupedWithFormButtons, Theme, Render, Tags;
+	use Attributes, 
+		AddFields, 
+		Weighted, 
+		GroupedWithFormButtons, 
+		Theme, 
+		Render, 
+		Tags,
+		HelpText;
 
 			
 	protected $type = 'field-group';
@@ -29,7 +37,6 @@ class FieldGroup {
 	public $label = false;
 	public $parent;
 	public $form;
-	public $helpText;
 	public $defaultTemplateDir = 'forms';
 	public $hideChildColons;					// Null will keep the defaults, true or false will override the defaults
 

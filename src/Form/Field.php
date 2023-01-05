@@ -6,6 +6,7 @@ namespace Coyote6\LaravelForms\Form;
 use Coyote6\LaravelForms\Form\Form;
 use Coyote6\LaravelForms\Traits\Attributes;
 use Coyote6\LaravelForms\Traits\GroupedWithFormButtons;
+use Coyote6\LaravelForms\Traits\HelpText;
 use Coyote6\LaravelForms\Traits\LivewireModel;
 use Coyote6\LaravelForms\Traits\Prefix;
 use Coyote6\LaravelForms\Traits\Render;
@@ -28,7 +29,8 @@ abstract class Field {
 		Render, 
 		Tags,
 		Prefix,
-		Suffix;
+		Suffix,
+		HelpText;
 	
 		
 	protected $type;
@@ -41,7 +43,6 @@ abstract class Field {
 	public $form;
 	public $id;	
 	public $errorMessage;
-	public $helpText;
 	public $defaultTemplateDir = 'forms';
 	
 	
