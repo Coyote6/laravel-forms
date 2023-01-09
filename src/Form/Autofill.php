@@ -185,6 +185,7 @@ class Autofill extends Input {
 		if (!is_null ($obj)) {
 			$lw = $id;
 		}
+
 		$this->setSelected ($lw);
 		$this->setSelectionProperties ($id, $name);
 		$this->getComponent()->form(true);
@@ -211,7 +212,6 @@ class Autofill extends Input {
 			$lw += [$id => $id];
 		}
 		$this->setSelected ($lw);
-		
 		$this->setSelectionProperties ($id, $name);
 		$this->getComponent()->form(true);
 	
@@ -221,12 +221,12 @@ class Autofill extends Input {
 	protected function setSelectionProperties (string $id, string $name) {
 		
 		// Selected
- 		$selectedProp = $this->getComponentProperty ($this->selectedProperty);
-		if (is_null ($selectedProp)) {
-			$selectedProp = $this->setComponentProperty ($this->selectedProperty, []);
+ 		$selectedProperty = $this->getComponentProperty ($this->selectedProperty);
+		if (is_null ($selectedProperty)) {
+			$selectedProperty = $this->setComponentProperty ($this->selectedProperty, []);
 		}
-		$selectedProp += [$id => $name];
-		$this->setComponentProperty ($this->selectedProperty, $selectedProp);
+		$selectedProperty += [$id => $name];
+		$this->setComponentProperty ($this->selectedProperty, $selectedProperty);
 		
 		
 		// Suggested
@@ -239,6 +239,13 @@ class Autofill extends Input {
 		}
 		$this->setComponentProperty ($this->suggestedProperty, $suggestedProp);
 
+		// Attempt to run updated selected property.
+		$comp = $this->getComponent();
+		$updatedSelectedMethod = 'updated' . ucfirst ($this->selectedProperty);
+		if (method_exists ($comp, $updatedSelectedMethod)) {
+			$comp->$updatedSelectedMethod ($selectedProperty);
+		}
+	
 	}
 	
 	
@@ -276,6 +283,18 @@ class Autofill extends Input {
 		$currentValue = $this->getComponentProperty ($this->searchProperty);
 		$comp = $this->getComponent();
 		$comp->$updatedMethod ($currentValue);
+		
+		// Attempt to run updated selected property.
+		$updatedSelectedMethod = 'updated' . ucfirst ($this->selectedProperty);
+		if (method_exists ($comp, $updatedSelectedMethod)) {
+			$comp->$updatedSelectedMethod ($selectedProperty);
+		}
+		
+		// Attempt to run updated property.
+		$updatedLwMethod = 'updated' . ucfirst ($this->lwModel);
+		if (method_exists ($comp, $updatedLwMethod)) {
+			$comp->$updatedLwMethod ($lw);
+		}
 		
 	}
 	
@@ -591,7 +610,16 @@ class Autofill extends Input {
 		else {
 			$lw = $value;
 		}
-		return $this->setComponentProperty($this->lwModel, $lw);
+		$val = $this->setComponentProperty($this->lwModel, $lw);
+
+		// Attempt to run updated property.
+		$comp = $this->getComponent();
+		$updatedLwMethod = 'updated' . ucfirst ($this->lwModel);
+		if (method_exists ($comp, $updatedLwMethod)) {
+			$comp->$updatedLwMethod ($lw);
+		}
+		
+		return $val;
 	}
 	
 	
