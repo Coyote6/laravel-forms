@@ -11,7 +11,7 @@ class Date extends Text {
 	
 	protected $type = 'date';
 	protected $template = 'date';
-	protected $format = 'Y-MM-DD';
+	protected $format = 'Y-m-d';
 	protected $formatType = 'php';
 
 	protected function defaultRules() {
@@ -20,7 +20,7 @@ class Date extends Text {
 	
 	protected function prerender () {
 		parent::prerender();
-		$this->addAttribute ('type', 'text');
+		$this->addAttribute ('type', $this->type);
 	}
 	
 	protected function templateVariables () {
@@ -33,9 +33,9 @@ class Date extends Text {
 		if ($this->formatType == 'php') {
 			switch ($this->format) {
 				case 'Y-m-d':
-					return 'Y-MM-DD';
+					return 'YYYY-MM-DD';
 				case 'Y-m-d H:i:s';
-					return 'Y-MM-DD hh:mm:ss';
+					return 'YYYY-MM-DD hh:mm:ss';
 			}
 		}
 		return $this->format;

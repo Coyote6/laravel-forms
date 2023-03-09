@@ -18,7 +18,7 @@
 		<script>
 		    var picker = new Pikaday({ 
 			    field: document.getElementById('{{ $name }}'),
-			    format: '{{ $format }}',
+			    format: '{{ $format }}'
 			});
 		</script>
 	@endpush
