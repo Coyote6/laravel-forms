@@ -54,7 +54,7 @@ class Checkbox extends Input {
 		}
 		
 		if (is_null ($this->value)) {
-			$this->value = 1;
+			$this->value = true;
 		}
 		
 		parent::prerender();

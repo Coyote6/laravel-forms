@@ -125,7 +125,6 @@ abstract class Field {
 		return $this;
 	}
 	
-	
 	public function label (string $label) {
 		$this->label = $label;
 		return $this;

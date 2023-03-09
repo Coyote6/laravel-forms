@@ -4,7 +4,15 @@
 namespace Coyote6\LaravelForms\Traits;
 
 
-use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\DatabaseRule;
+use Illuminate\Validation\Rules\Dimensions;
+use Illuminate\Validation\Rules\Enum;
+use Illuminate\Validation\Rules\Exists;
+use Illuminate\Validation\Rules\In;
+use Illuminate\Validation\Rules\NotIn;
+use Illuminate\Validation\Rules\RequireIf;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\Rules\Unique;
 
 
 trait Rules {
@@ -25,6 +33,40 @@ trait Rules {
 		$parts = explode(':', $rule);
 		return $parts[0];
 	}
+	
+	
+	public function isKnownRule ($val) {
+		if (is_object ($val)) {
+			if ($val instanceof Unique) {
+				return true;
+			}
+			if ($val instanceof Password) {
+				return true;
+			}
+			if ($val instanceof Enum) {
+				return true;
+			}
+			if ($val instanceof In) {
+				return true;
+			}
+			if ($val instanceof NotIn) {
+				return true;
+			}
+			if ($val instanceof RequireIf) {
+				return true;
+			}
+			if ($val instanceof Exists) {
+				return true;
+			}
+			
+			if ($val instanceof DatabaseRule) {
+				return true;
+			}
+			if ($val instanceof Dimensions) {
+				return true;
+			}
+		}
+	}
 
 
 	public function addRule ($rule, $ruleName = null) {
@@ -44,7 +86,7 @@ trait Rules {
 			$this->rules[$ruleName] = $rule;
 		
 		}
-		else if ($rule instanceof Rule) {
+		else if ($this->isKnownRule ($rule)) {
 			if (is_string ($ruleName)) {
 				$this->rules[$ruleName] = $rule;
 			}
@@ -59,7 +101,7 @@ trait Rules {
 	public function addRules (array $rules) {
 		
 		foreach ($rules as $rule) {
-			if (is_string ($rule)) {
+			if (is_string ($rule) || $this->isKnownRule ($rule)) {
 				$this->addRule ($rule);
 			}
 		}
