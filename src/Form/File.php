@@ -167,7 +167,7 @@ class File extends input {
 #			}
 			
 		}
-		
+
 		return  $previouslyUploaded;
 		
 	}
@@ -250,10 +250,11 @@ class File extends input {
 			}
 			else {
 				if ($uploaded) {
-					if ($this->isMulti()) {
+					if ($this->isMulti() && is_array ($uploaded)) {
 						foreach ($uploaded as $img) {
-							if ($img instanceof \Livewire\TemporaryUploadedFile && !isset ($allUploads[md5($img->getFilename())])) {
-								$allUploads[md5($img->getFilename())] = [
+							$hashedName = md5 ($img->getFilename());
+							if ($img instanceof \Livewire\TemporaryUploadedFile && !isset ($allUploads[$hashedName])) {
+								$allUploads[$hashedName] = [
 									'type' => 'object',
 									'model' => false,
 									'model-id' => false,
@@ -265,16 +266,19 @@ class File extends input {
 							}
 						}
 					}
-					else if ($uploaded instanceof \Livewire\TemporaryUploadedFile && !isset ($allUploads[md5($uploaded->getFilename())])) {
-						$allUploads[md5($uploaded->getFilename())] = [
-							'type' => 'object',
-							'model' => false,
-							'model-id' => false,
-							'upload' => true,
-							'value' => $uploaded,
-							'preview-url' => $this->getPreviewUrl ($uploaded),
-							'filename' => $this->getFilename ($uploaded)
-						];
+					else if ($uploaded instanceof \Livewire\TemporaryUploadedFile) {
+						$hashedName = md5 ($uploaded->getFilename());
+						if (!isset ($allUploads[$hashedName])) {
+							$allUploads[$hashedName] = [
+								'type' => 'object',
+								'model' => false,
+								'model-id' => false,
+								'upload' => true,
+								'value' => $uploaded,
+								'preview-url' => $this->getPreviewUrl ($uploaded),
+								'filename' => $this->getFilename ($uploaded)
+							];
+						}
 					}
 				}
 
@@ -362,18 +366,45 @@ class File extends input {
 
 		if (is_object ($value)) {
 			if (class_exists ('\Livewire\TemporaryUploadedFile') && $value instanceof \Livewire\TemporaryUploadedFile) {
-				if (class_exists ('Coyote6\LaravelMedia\Models\Image')) {
 					
-					$hash = md5 ($value->getFilename());
-					if (!isset ($accessTimes[$hash])) {
-						$accessTimes[$hash] = $this->setTempAccessTime($hash);
-					}
-					
-					return URL::temporarySignedRoute(
-			        	'media.temporary-preview', $accessTimes[$hash], ['style' => $this->previewStyle, 'slug' => $this->getFilenameForUrl ($value->getFilename())]
-			        );
+				// Get the extension, and if not found,
+				// attempt to pull it from the file name.	
+				//
+				$ext = $value->getExtension();
+				if ($ext == '') {
+					$ext = (new \Symfony\Component\Mime\MimeTypes)->getExtensions(\Illuminate\Support\Facades\File::mimeType ($value->path()))[0];
 				}
-				return $value->temporaryUrl();
+				
+				//
+				// Check to make sure the file type is in the allowable preview image types.
+				//
+				$allowed = config('livewire.temporary_file_upload.preview_mimes');
+				if (in_array ($ext, $allowed)) {
+					if (class_exists ('Coyote6\LaravelMedia\Models\Image')) {
+												
+						$hash = md5 ($value->getFilename());
+						if (!isset ($accessTimes[$hash])) {
+							$accessTimes[$hash] = $this->setTempAccessTime($hash);
+						}
+						
+						return URL::temporarySignedRoute(
+				        	'media.temporary-preview', $accessTimes[$hash], ['style' => $this->previewStyle, 'slug' => $this->getFilenameForUrl ($value->getFilename())]
+				        );
+					}
+										
+					return $value->temporaryUrl();
+				}
+				
+				//
+				// Use stock images for default
+				//
+
+				if ($ext == 'pdf') {
+					return 'https://cdn.iconscout.com/icon/free/png-256/free-pdf-file-2951641-2446711.png?f=webp&w=256';
+				}
+
+				return 'https://cdn.iconscout.com/icon/free/png-256/free-document-1439233-1214243.png?f=webp&w=256';
+				
 			}
 			else if (class_exists ('Coyote6\LaravelMedia\Models\Image') && $value instanceof \Coyote6\LaravelMedia\Models\Image) {
 				if (class_exists ('Coyote6\LaravelMedia\Models\Image') && \Coyote6\LaravelMedia\Models\ImageStyle::exists ($this->previewStyle)) {
@@ -594,12 +625,12 @@ class File extends input {
 	
 	protected function prerender () {
 		
-		if ($this->multifile) {
-			$this->addAttribute ('name', $this->name . '[]');
-		}
-		else {
+//		if ($this->multifile) {
+//			$this->addAttribute ('name', $this->name . '[]');
+//		}
+//		else {
 			$this->addAttribute ('name', $this->name);
-		}
+//		}
 		
 		$this->addAttribute ('type', $this->type);
 		
