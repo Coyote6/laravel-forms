@@ -1,11 +1,11 @@
 # Laravel Forms
 
 ## About The Project
-Laravel Forms is just a simple class used to generate the html for forms and assist with simple validation process in Laravel.  This project is still in development, so documentation will be slow going.
+Laravel Forms is class based form package used to generate the html for the forms and assist with simple validation process in Laravel.  This project is still in development, so documentation will be slow going.
 
 ## Prerequisites
-* PHP 7.2 or Higher
-* Laravel Install
+* PHP 8.0 or Higher
+* Laravel 8+ Install
 
 ## Getting Started
 Install via composer:
@@ -411,19 +411,37 @@ $form->file ('field-name')
 
 ##### Setting Default Value, Removing Images, & Retrieving Image w/o Livewire
 ###### Single File
+
+Note: Non-Livewire documentation may be out of date as I have not had time to test.
 ```php
 public function storeFallback () {
 
-	$upload = request()->file('image');
+	$upload = request()->file('file');
 	if (!is_null ($upload) && $upload->isValid()) {
-		// Save Image
+		
+		//
+		// Save File using the Laravel method
+		//
+		// @see https://laravel.com/docs/10.x/filesystem#file-uploads
+		//
+		
 	}
 	
-	$imgs = request()->input('imageRemove');
-	if (!is_null ($imgs) && is_array ($imgs)) {
-		$img = current ($imgs);
-		if ($img == '1') {
-			// Remove image
+	//
+	// Note:
+	// This still requires Livewire... need to revisit.
+	//
+	$removed = request()->input('fileRemove');
+	if (!is_null ($removed) && is_array ($removed)) {
+		$file = current ($removed);
+		if ($file == '1') {
+			
+			//
+			// Remove File
+			//
+			// This method depends on how you saved the file.
+			//
+			
 		}
 	}
 	
@@ -435,12 +453,14 @@ protected function generateForm () {
 	$form = form();
 	$form->action('/post/path');
 	
-	$default = '/path/to/image.jpg';
-	$form->image('image')
-		->label('Image')
-		->value($default);
+	$default = '/path/to/file.jpg';
+	
+	$form->file ('file')
+		->label ('File')
+		->value ($default);
 	
 	return $form;
+	
 }
 ```
 
@@ -449,21 +469,36 @@ protected function generateForm () {
 ```php
 public function storeFallback () {
 
-	$uploads = request()->file('image');
+	$uploads = request()->file ('files');
 	if (!is_null ($uploads) && is_array ($uploads)) {
 		foreach ($uploads as $key => $upload) {
 			if ($upload->isValid()) {
-				// Save Image
+				
+				//
+				// Save File using the Laravel method
+				//
+				// @see https://laravel.com/docs/10.x/filesystem#file-uploads
+				//
+		
 			}
 		}
 	}
 	
-	$imgs = request()->input('imageRemove');
-	if (!is_null ($imgs) && is_array ($imgs)) {
-		foreach ($imgs as $key => $img) {
-			if ($img == '1') {
-				// Remove that image
-			}
+	//
+	// Note:
+	// This still requires Livewire... need to revisit.
+	//
+	$removed = request()->input('filesRemove');
+	if (!is_null ($removed) && is_array ($removed)) {
+		$file = current ($removed);
+		if ($file == '1') {
+			
+			//
+			// Remove File
+			//
+			// This method depends on how you saved the file.
+			//
+			
 		}
 	}
 	
@@ -474,33 +509,121 @@ protected function generateForm () {
 	$form = form();
 	$form->action('/post/path');
 	
-	$default = '/path/to/image.jpg';
-	$form->image('image')
-		->label('Image')
+	$default = [
+		'/path/to/file.jpg'
+	];
+	
+	$form->file ('files')
+		->label ('Files')
 		->multi()			// Alias to multiple ($maxFiles)
-		->value($default);
+		->value ($default);
 	
 	return $form;
 }
 ```
 
 ##### Setting Default Value, Removing Images, & Retrieving Image w/ Livewire
-###### Multi File
+The field will add 4 additional properties to the Livewire component.  These are properties for previously uploaded files, previously uploaded files that are removed, and all files that up-to-date, and temporary access times for image previews. These properties can be accessed by adding 'PreviousUploads', 'Removed', 'All', 'TempAccessTimes' to the Livewire property. For example, if the property is set to $this->file then the values can be accessed via $this->filePreviousUploads, $this->fileRemoved, $this->fileAll, $this->fileTempAccessTimes respectively. 
 
-The field will add 3 additional properties to the Livewire component.  There is are properties for previously uploaded files, previously uploaded files that are removed, and all files that up-to-date. These properties can be accessed by adding 'PreviousUploads', 'Removed', and 'All' to the Livewire property. For example, if the property is set to $this->image then the values can be accessed via $this->imagePreviousUploads, $this->imageRemoved, and $this->imageAll respectively. Note: $this->imageAll may not be updated until after the form is generated or validated.
+Note: $this->imageAll may not be updated until after the form is generated or validated.
+
+###### Single File
+
 
 ```php
 public function store () {
 
 	$this->validate();
-	foreach ($this->images as $img) {
-		// Save Image
+
+	if ($this->file instanceof \Livewire\TemporaryUploadedFile) {
+		
+		//
+		// Save File using the Livewire Temp File method
+		//
+		// @see https://laravel-livewire.com/docs/2.x/file-uploads#storing-files
+		//
+		$this->file->store ('dir');
+		
 	}
 	
-	foreach ($this->imagesRemoved as $hash => $img) {
-		// Remove existing image
+
+	foreach ($this->fileRemoved as $hash => $file) {
+		
+		//
+		// Remove File
+		//
+		// This method depends on how you saved the file.
+		//
+		
 	}
 	
+}
+	
+	
+protected function generateForm () {
+	
+	$form = form();
+	$form->action('/post/path');
+	
+	$default = '/path/to/file.jpg';
+	
+	$form->file ('file')
+		->label ('File')
+		->value ($default);
+	
+	return $form;
+	
+}
+```
+
+###### Multi File
+
+
+
+```php
+public function store () {
+
+	$this->validate();
+	foreach ($this->files as $file) {
+		
+		// Save File using the Livewire Temp File method
+		//
+		// Multi File Method
+		// @see https://laravel-livewire.com/docs/2.x/file-uploads#multiple-files
+		// 
+		$this->file->store ('dir');
+		
+	}
+	
+
+	foreach ($this->filesRemoved as $hash => $file) {
+		
+		//
+		// Remove Files
+		//
+		// This method depends on how you saved the file.
+		//
+		
+	}
+
+	
+}
+
+protected function generateForm () {
+	
+	$form = form();
+	$form->action('/post/path');
+	
+	$default = [
+		'/path/to/file.jpg'
+	];
+	
+	$form->file ('files')
+		->label ('Files')
+		->multi()			// Alias to multiple ($maxFiles)
+		->value ($default);
+	
+	return $form;
 }
 ```
 
@@ -521,6 +644,7 @@ $form->html ('field-name')
 ```
 
 #### Image - &lt;input type="file"&gt;
+This is the same as a file field, but is restricted to image files.
 ```php
 
 $form->image ('field-name')

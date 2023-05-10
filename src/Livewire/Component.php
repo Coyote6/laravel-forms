@@ -107,6 +107,7 @@ abstract class Component extends LivewireComponent {
 	
 	public function form ($regenerate = false) {
 		
+/*
 		if (property_exists ($this, 'formId') && is_string ($this->formId) && $this->formId != '') {
 			static $forms;
 			if (is_null ($forms) || !isset ($forms[$this->formId]) || $regenerate) {
@@ -114,6 +115,7 @@ abstract class Component extends LivewireComponent {
 			}
 			return $forms[$this->formId];
 		}
+*/
 		
 		static $form;
 		if (is_null ($form) || $regenerate) {

@@ -235,11 +235,6 @@ class Form {
 								$rules[$name][$frn] = $frv;
 							}
 							else {
-/*
-								if ($field->isMulti()) {
-						$name .= ;
-					}
-*/
 								$frules[$frn] = $frv;
 							}
 						}

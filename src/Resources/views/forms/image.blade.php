@@ -1,3 +1,5 @@
+
+
 <div 
 	{{ $form_item_attributes->merge([
     	'class' => 'flex items-center'
@@ -20,9 +22,9 @@
 			@if (!$multifile)
 			
 				<div>
-					@if (!empty ($previewUrl) && is_array ($previewUrl))
+					@if (!empty ($previews) && is_array ($previews))
 						<ul>
-							@foreach ($previewUrl as $k => $v)
+							@foreach ($previews as $k => $v)
 								<li>
 									<img src="{{ $v['url'] }}" alt="{{ $v['filename'] }} image preview" id="{{ $name }}Img[{{ $k }}]"/>
 									@if ($displayFilename)
@@ -94,9 +96,9 @@
 		</div>
 		
 		<div>
-			@if ($multifile && is_array ($previewUrl))
+			@if ($multifile && is_array ($previews))
 				<ul>
-					@foreach ($previewUrl as $k => $v)
+					@foreach ($previews as $k => $v)
 						<li>
 							<img src="{{ $v['url'] }}" alt="{{ $v['filename'] }} image preview" id="{{ $name }}Img[{{ $k }}]"/>
 							@if ($displayFilename)

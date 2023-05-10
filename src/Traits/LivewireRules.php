@@ -23,7 +23,7 @@ trait LivewireRules {
 	
 	
 	public function livewireRules (string $fieldName = null) {
-		
+	
 		$rules = [];
 		$isMulti = [];
 
