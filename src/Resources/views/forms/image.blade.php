@@ -26,14 +26,23 @@
 						<ul>
 							@foreach ($previews as $k => $v)
 								<li>
-									<img src="{{ $v['url'] }}" alt="{{ $v['filename'] }} image preview" id="{{ $name }}Img[{{ $k }}]"/>
-									@if ($displayFilename)
-										<span>{{ $v['filename'] }}</span>
+									@if ($v['url']) 
+										<a target="_blank" href="{{ $v['url'] }}">
+											<img src="{{ $v['preview'] }}" alt="{{ $v['filename'] }} image preview" id="{{ $name }}Img[{{ $k }}]"/>
+											@if ($displayFilename)
+												<span>{{ $v['filename'] }}</span>
+											@endif
+										</a>
+									@else
+										<img src="{{ $v['preview'] }}" alt="{{ $v['filename'] }} image preview" id="{{ $name }}Img[{{ $k }}]"/>
+										@if ($displayFilename)
+											<span>{{ $v['filename'] }}</span>
+										@endif
 									@endif
 									@if ($livewireModel)
-										<x-forms-input.only type="button" value="Remove" wire:click="removeFile('{{ $livewireModel }}', '{{ $k }}')"/>
+										<x-forms-input.only class="button bg-gray-200 px-3 py-1 rounded cursor-pointer hover:bg-gray-300" type="button" value="Remove" wire:click="removeFile('{{ $livewireModel }}', '{{ $k }}')"/>
 									@else
-										<x-forms-input.only type="button" name="{{ $name }}RemoveButton[{{ $k }}]" value="Remove" @click="removeImg({{ $k }})"/>
+										<x-forms-input.only class="button bg-gray-200 px-3 py-1 rounded cursor-pointer hover:bg-gray-300" type="button" name="{{ $name }}RemoveButton[{{ $k }}]" value="Remove" @click="removeImg({{ $k }})"/>
 								        <x-forms-input.only type="hidden" name="{{ $name }}Remove[{{ $k }}]" value="" />
 							        @endif
 								</li>
@@ -100,14 +109,23 @@
 				<ul>
 					@foreach ($previews as $k => $v)
 						<li>
-							<img src="{{ $v['url'] }}" alt="{{ $v['filename'] }} image preview" id="{{ $name }}Img[{{ $k }}]"/>
-							@if ($displayFilename)
-								<span>{{ $v['filename'] }}</span>
+							@if ($v['url']) 
+								<a target="_blank" href="{{ $v['url'] }}">
+									<img src="{{ $v['preview'] }}" alt="{{ $v['filename'] }} image preview" id="{{ $name }}Img[{{ $k }}]"/>
+									@if ($displayFilename)
+										<span>{{ $v['filename'] }}</span>
+									@endif
+								</a>
+							@else
+								<img src="{{ $v['preview'] }}" alt="{{ $v['filename'] }} image preview" id="{{ $name }}Img[{{ $k }}]"/>
+								@if ($displayFilename)
+									<span>{{ $v['filename'] }}</span>
+								@endif
 							@endif
 							@if ($livewireModel)
-								<x-forms-input.only type="button" value="Remove" wire:click="removeFile('{{ $livewireModel }}', '{{ $k }}')"/>
+								<x-forms-input.only class="button bg-gray-200 px-3 py-1 rounded cursor-pointer hover:bg-gray-300" type="button" value="Remove" wire:click="removeFile('{{ $livewireModel }}', '{{ $k }}')"/>
 							@else
-								<x-forms-input.only type="button" name="{{ $name }}RemoveButton[{{ $k }}]" value="Remove" @click="removeImg({{ $k }})"/>
+								<x-forms-input.only class="button bg-gray-200 px-3 py-1 rounded cursor-pointer hover:bg-gray-300" type="button" name="{{ $name }}RemoveButton[{{ $k }}]" value="Remove" @click="removeImg({{ $k }})"/>
 						        <x-forms-input.only type="hidden" name="{{ $name }}Remove[{{ $k }}]" value="" />
 					        @endif
 						</li>

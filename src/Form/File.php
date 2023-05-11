@@ -230,7 +230,7 @@ class File extends Input {
 	
 		if ($this->isMulti ()) {
 			
-			if (is_array ($this->value)) {
+			if (is_array ($this->value) || $this->value instanceof \Illuminate\Database\Eloquent\Collection) {
 				foreach ($this->value as $k => $v) {
 					$hash = $this->getHashedKey ($v);
 					$previouslyUploaded[$hash] = [
@@ -240,6 +240,7 @@ class File extends Input {
 						'upload' => (class_exists ('\Livewire\TemporaryUploadedFile') && $v instanceof \Livewire\TemporaryUploadedFile),
 						'value' => $v,
 						'preview-url' => $this->getPreviewUrl ($v),
+						'url' => $this->getUrl ($v),
 						'filename' => static::getFilename ($v)
 					];	
 				}
@@ -256,6 +257,7 @@ class File extends Input {
 					'upload' => (class_exists ('\Livewire\TemporaryUploadedFile') && $this->value instanceof \Livewire\TemporaryUploadedFile),
 					'value' => $this->value,
 					'preview-url' => $this->getPreviewUrl ($this->value),
+					'url' => $this->getUrl ($this->value),
 					'filename' => static::getFilename ($this->value)
 				];	
 			}
@@ -295,6 +297,7 @@ class File extends Input {
 							'upload' => true,
 							'value' => $file,
 							'preview-url' => $this->getPreviewUrl ($file),
+							'url' => false,
 							'filename' => static::getFilename ($file)
 						];
 					}
@@ -316,6 +319,7 @@ class File extends Input {
 						'upload' => true,
 						'value' => $uploaded,
 						'preview-url' => $this->getPreviewUrl ($uploaded),
+						'url' => false,
 						'filename' => static::getFilename ($uploaded)
 					];
 				}
@@ -518,6 +522,12 @@ class File extends Input {
 			) {
 				return $value->filename;
 			}
+			else if (method_exists ($value, 'getFilename')) {
+				return $value->getFilename();
+			}
+			else if (method_exists ($value, 'getFilenameAttribute')) {
+				return $value->filename;
+			}
 		}
 		else if (is_string ($value)) {
 			return $value;
@@ -531,6 +541,36 @@ class File extends Input {
 			$ext = (new \Symfony\Component\Mime\MimeTypes)->getExtensions(\Illuminate\Support\Facades\File::mimeType ($value->path()))[0];
 		}
 		return $ext;
+	}
+	
+	
+	protected function getUrl ($value): string|false  {
+		
+		if (is_object ($value)) {
+			
+			// Do not allow temp files to be clicked on for safety reasons.
+			if (class_exists ('\Livewire\TemporaryUploadedFile') && $value instanceof \Livewire\TemporaryUploadedFile) {			
+				return false;
+			}
+			else if (class_exists ('Coyote6\LaravelMedia\Models\Image') && $value instanceof \Coyote6\LaravelMedia\Models\Image) {
+				return $value->url();
+			}
+			else if (class_exists ('Coyote6\LaravelMedia\Concerns\Url') && $value instanceof \Coyote6\LaravelMedia\Concerns\Url) {
+				return $value->url();
+			}
+			else if (method_exists ($value, 'url')) {
+				return $value->url();
+			}
+			else if ($value instanceof \Illuminate\Database\Eloquent\Model && method_exists ($value, 'getUrlAttribute')) {
+				return $value->url;
+			}
+			return false;
+		}
+		else if (is_string ($value) && $value != '') {
+			return $value;
+		}
+		return false;
+			
 	}
 	
 	
@@ -567,7 +607,7 @@ class File extends Input {
 				        	'media.temporary-preview', $accessTimes[$hash], ['style' => $this->previewStyle, 'slug' => static::getFilenameForUrl ($value->getFilename())]
 				        );
 					}
-										
+															
 					return $value->temporaryUrl();
 				}
 				
@@ -598,6 +638,15 @@ class File extends Input {
 					return $value->url();
 				}
 			}
+			else if (method_exists ($value, 'previewUrl')) {
+				return $value->previewUrl();
+			}
+			else if ($value instanceof \Illuminate\Database\Eloquent\Model && method_exists ($value, 'getPreviewUrlAttribute')) {
+				return $value->previewUrl;
+			}
+	
+			return 'https://cdn.iconscout.com/icon/free/png-256/free-document-1439233-1214243.png?f=webp&w=256';
+	
 		}
 		else if (is_string ($value) && $value != '') {
 			return $value;
@@ -615,7 +664,8 @@ class File extends Input {
 			$preview = [];		
 			foreach ($this->getAllUploads() as $hash => $value) {
 				$preview[$hash] = [
-					'url' => $value['preview-url'],
+					'preview' => $value['preview-url'],
+					'url' => $value['url'],
 					'filename' => $value['filename']
 				];
 			}
@@ -642,14 +692,16 @@ class File extends Input {
 			if ($this->isMulti()) {
 				foreach ($this->value as $file) {
 					$preview[static::getHashedKey ($file)] = [
-						'url' => $this->getPreviewUrl ($file),
+						'preview' => $this->getPreviewUrl ($file),
+						'url' => $this->getUrl ($file),
 						'filename' => static::getFilename ($file)
 					];
 				}
 			}
 			else {
 				$preview[static::getHashedKey ($this->value)] = [
-					'url' => $this->getPreviewUrl ($this->value),
+					'preview' => $this->getPreviewUrl ($this->value),
+					'url' => $this->getUrl ($this->value),
 					'filename' => static::getFilename ($this->value)
 				];
 			}
@@ -792,7 +844,7 @@ class File extends Input {
 			$allowed = $mimes;
 		}
 		if ($allowed) {
-			$this->rules['mimes'] = $mimes;
+			$this->rules['mimes'] = 'mimes:' . $mimes;
 			$split = explode(',',$mimes);
 			foreach ($split as &$mime) {
 				$mime = '.' . $mime;
