@@ -111,8 +111,8 @@ class File extends Input {
 		if (config ('media.remove_file_ext', true)) {
 			$pos = strrpos ($filename, '.');
 			if ($pos !== false) {
-		        $filename = substr_replace ($filename, '/' , $pos, 1);
-		    }
+				$filename = substr_replace ($filename, '/' , $pos, 1);
+			}
 		}
 		return $filename;
 	}
@@ -143,19 +143,19 @@ class File extends Input {
 			trigger_error ("The \Livewire\TemporaryUploadedFile class was not found. Please make sure to install Livewire before using as a Livewire enabled form.");
 		}
 		
-		$lw = $this->form->getComponentProperty ($this->livewireModel);
-
-		if (is_null ($lw)) {
-			trigger_error ("The '{$this->name}' field is not properly configured. Please make sure the Livewire property '{$this->livewireModel}' is set to null or a '\Livewire\TemporaryUploadedFile' object for single file uploads or to an array for multifile uploads.");
+		if (!property_exists ($this->form->getComponent(), $this->livewireModel)) {
+			trigger_error ("The '{$this->name}' field is not properly configured. Please make sure the Livewire property '{$this->livewireModel}' is set on the component and is publicly accessible.");
 		}
-		else if ($this->multifile && !is_array ($lw)) {
+		
+		$lw = $this->form->getComponentProperty ($this->livewireModel);
+		
+		if ($this->multifile && !is_array ($lw)) {
 			trigger_error ("The '{$this->name}' field is not properly configured. Please make sure the Livewire property '{$this->livewireModel}' is set as an array for multifile uploads.");
 		}
 		else if (!$this->multifile && !is_null ($lw) && !is_object ($lw)) {
-			trigger_error ("The '{$this->name}' field is not properly configured. Please make sure the Livewire property '{$this->livewireModel}' is set to null or is a '\Livewire\TemporaryUploadedFile' object.");	
+			trigger_error ("The '{$this->name}' field is not properly configured. Please make sure the Livewire property '{$this->livewireModel}' is set to null, an object with a the methods 'getPreviewUrl' and 'getUrl' that return a string for the image url(s), or is a '\Livewire\TemporaryUploadedFile' object.");	
 		}
 
-		
 	}
 	
 	
@@ -398,7 +398,7 @@ class File extends Input {
 			$previouslyUploaded = $this->getComponentProperty ($this->previousModel);
 			if (is_null ($previouslyUploaded)) {
 				return $this->setPreviousUploads();
- 			}
+			 }
 		}
 
 		return $previouslyUploaded;
@@ -604,8 +604,8 @@ class File extends Input {
 						}
 						
 						return URL::temporarySignedRoute(
-				        	'media.temporary-preview', $accessTimes[$hash], ['style' => $this->previewStyle, 'slug' => static::getFilenameForUrl ($value->getFilename())]
-				        );
+							'media.temporary-preview', $accessTimes[$hash], ['style' => $this->previewStyle, 'slug' => static::getFilenameForUrl ($value->getFilename())]
+						);
 					}
 															
 					return $value->temporaryUrl();
