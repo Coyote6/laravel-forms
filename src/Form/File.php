@@ -371,7 +371,7 @@ class File extends Input {
 	//
 	// @return int
 	//
-	protected function setTempAccessTime ($hash): int {
+	protected function setTempAccessTime ($hash): int|\Illuminate\Support\Carbon {
 		
 		$accessTime = now()->addMinutes(30);
 		
@@ -603,7 +603,7 @@ class File extends Input {
 							$accessTimes[$hash] = $this->setTempAccessTime($hash);
 						}
 						
-						return URL::temporarySignedRoute(
+						return \URL::temporarySignedRoute(
 							'media.temporary-preview', $accessTimes[$hash], ['style' => $this->previewStyle, 'slug' => static::getFilenameForUrl ($value->getFilename())]
 						);
 					}
