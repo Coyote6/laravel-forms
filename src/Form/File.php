@@ -371,9 +371,9 @@ class File extends Input {
 	//
 	// @return int
 	//
-	protected function setTempAccessTime ($hash): int|\Illuminate\Support\Carbon {
+	protected function setTempAccessTime ($hash): int {
 		
-		$accessTime = now()->addMinutes(30);
+		$accessTime = now()->addMinutes(30)->timestamp;
 		
 		if ($this->isLw()) {
 			$accessTimes = $this->getTempAccessTimes();
@@ -577,6 +577,7 @@ class File extends Input {
 	protected function getPreviewUrl ($value) {
 		
 		$accessTimes = $this->getTempAccessTimes();
+
 #
 # To Do:
 #
