@@ -24,6 +24,7 @@ class Autofill extends Input {
 	protected $searchClass;
 	protected $selectionsAllowed = 0;	// 0 = infinite
 	protected $exclude;
+	protected int $limit = 50;
 	
 	protected $searchProperty;
 	protected $prevSearchProperty;
@@ -139,24 +140,29 @@ class Autofill extends Input {
 	
 	protected function searchValues ($value) {
 		if ($value == '') {
-			return $this->searchClass::query ()
+			$q = $this->searchClass::query ()
 				->exclude($this->idField, $this->exclude)
-				->multiFieldSort($this->sortFields)
-				->get();
+				->multiFieldSort($this->sortFields);
+				
+			
 		}
-		if ($this->multiFieldSearch) {
-			return $this->searchClass::query ()
+		else if ($this->multiFieldSearch) {
+			$q = $this->searchClass::query ()
 				->exclude($this->idField, $this->exclude)
 				->multiFieldSearch($this->searchFields, $value)
-				->multiFieldSort($this->sortFields)
-				->get();
+				->multiFieldSort($this->sortFields);
+		}
+		else {
+			$q = $this->searchClass::query ()
+				->exclude($this->idField, $this->exclude)
+				->search($this->searchFields, $value)
+				->multiFieldSort($this->sortFields);
 		}
 		
-		return $this->searchClass::query ()
-			->exclude($this->idField, $this->exclude)
-			->search($this->searchFields, $value)
-			->multiFieldSort($this->sortFields)
-			->get();
+		if ($this->limit > 0) {
+			$q = $q->limit($this->limit);
+		}
+		return $q->get();
 		
 	}
 	
@@ -402,6 +408,14 @@ class Autofill extends Input {
 		if ($name != '') {
 			$this->nameField = $name;
 		}
+		return $this;
+	}
+	
+	public function limit (int $limit) {
+		if ($limit < 0) {
+			trigger_error ('The field is misconfigured, please make sure the limit is set to a positive integer. If you want all results returned set the limit to 0.');
+		}
+		$this->limit = $limit;
 		return $this;
 	}
 	
@@ -681,6 +695,11 @@ class Autofill extends Input {
 		if (!is_null ($this->exclude) && !is_string ($this->exclude) && !is_array ($this->exclude)) {
 			throw new Exception ('The "' . $this->name . '" autofill field is misconfigured. Please make sure the exclude() value is a string or array of ids to exclude from the search.');
 
+		}
+		
+		// Limit
+		if ($this->limit < 0) {
+			trigger_error ('The field is misconfigured, please make sure the limit is set to a positive integer. If you want all results returned set the limit to 0.');
 		}
 		
 	}
