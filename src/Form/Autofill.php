@@ -24,7 +24,6 @@ class Autofill extends Input {
 	protected $searchClass;
 	protected $selectionsAllowed = 0;	// 0 = infinite
 	protected $exclude;
-	protected int $limit = 50;
 	
 	protected $searchProperty;
 	protected $prevSearchProperty;
@@ -140,29 +139,24 @@ class Autofill extends Input {
 	
 	protected function searchValues ($value) {
 		if ($value == '') {
-			$q = $this->searchClass::query ()
+			return $this->searchClass::query ()
 				->exclude($this->idField, $this->exclude)
-				->multiFieldSort($this->sortFields);
-				
-			
+				->multiFieldSort($this->sortFields)
+				->get();
 		}
-		else if ($this->multiFieldSearch) {
-			$q = $this->searchClass::query ()
+		if ($this->multiFieldSearch) {
+			return $this->searchClass::query ()
 				->exclude($this->idField, $this->exclude)
 				->multiFieldSearch($this->searchFields, $value)
-				->multiFieldSort($this->sortFields);
-		}
-		else {
-			$q = $this->searchClass::query ()
-				->exclude($this->idField, $this->exclude)
-				->search($this->searchFields, $value)
-				->multiFieldSort($this->sortFields);
+				->multiFieldSort($this->sortFields)
+				->get();
 		}
 		
-		if ($this->limit > 0) {
-			$q = $q->limit($this->limit);
-		}
-		return $q->get();
+		return $this->searchClass::query ()
+			->exclude($this->idField, $this->exclude)
+			->search($this->searchFields, $value)
+			->multiFieldSort($this->sortFields)
+			->get();
 		
 	}
 	
@@ -227,7 +221,7 @@ class Autofill extends Input {
 	protected function setSelectionProperties (string $id, string $name) {
 		
 		// Selected
- 		$selectedProperty = $this->getComponentProperty ($this->selectedProperty);
+		 $selectedProperty = $this->getComponentProperty ($this->selectedProperty);
 		if (is_null ($selectedProperty)) {
 			$selectedProperty = $this->setComponentProperty ($this->selectedProperty, []);
 		}
@@ -408,14 +402,6 @@ class Autofill extends Input {
 		if ($name != '') {
 			$this->nameField = $name;
 		}
-		return $this;
-	}
-	
-	public function limit (int $limit) {
-		if ($limit < 0) {
-			trigger_error ('The field is misconfigured, please make sure the limit is set to a positive integer. If you want all results returned set the limit to 0.');
-		}
-		$this->limit = $limit;
 		return $this;
 	}
 	
@@ -697,11 +683,6 @@ class Autofill extends Input {
 
 		}
 		
-		// Limit
-		if ($this->limit < 0) {
-			trigger_error ('The field is misconfigured, please make sure the limit is set to a positive integer. If you want all results returned set the limit to 0.');
-		}
-		
 	}
 	
 	
@@ -775,6 +756,15 @@ class Autofill extends Input {
 		
 		return $vars;		
 		
+	}
+	
+	// We are removing the required attribute from the field,
+	// so if the user just selects an item without typing it 
+	// does not give them the "This field is required" message.
+	//
+	public function renderAttributes () {
+		$this->removeAttribute ('required');
+		return parent::renderAttributes();
 	}
 	
 	
