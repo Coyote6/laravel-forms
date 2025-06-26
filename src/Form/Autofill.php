@@ -43,6 +43,9 @@ class Autofill extends Input {
 	public $noSearchResultsMessage = 'Sorry, no results were found for your search.';
 	public $noMoreResultsMessage = 'No more results were found.';
 	public $noMoreCurrentResultsMessage = 'No more results were found for the current search.';
+	public $moreResultsMessage = 'More results available... Please narrow your search.';
+	
+	public $allSuggestionsCount = 0;
 	
 	
 	//
@@ -101,7 +104,6 @@ class Autofill extends Input {
 		$values = $this->searchValues ($value);
 		
 		$selected = $this->getSelected();
-		$suggestedProp = $this->setComponentProperty ($this->suggestedProperty, []);
 		
 		$suggestedProp = $this->setComponentProperty ($this->suggestedProperty, []);
 		foreach ($values as $v) {
@@ -139,23 +141,44 @@ class Autofill extends Input {
 	
 	protected function searchValues ($value) {
 		if ($value == '') {
+			$this->allSuggestionsCount = $this->searchClass::query ()
+				->exclude($this->idField, $this->exclude)
+				->multiFieldSort($this->sortFields)
+				->count();
+			
 			return $this->searchClass::query ()
 				->exclude($this->idField, $this->exclude)
 				->multiFieldSort($this->sortFields)
+				->limit(50)
 				->get();
 		}
 		if ($this->multiFieldSearch) {
+			$this->allSuggestionsCount = $this->searchClass::query ()
+				->exclude($this->idField, $this->exclude)
+				->multiFieldSearch($this->searchFields, $value)
+				->multiFieldSort($this->sortFields)
+				->count();
+			
 			return $this->searchClass::query ()
 				->exclude($this->idField, $this->exclude)
 				->multiFieldSearch($this->searchFields, $value)
 				->multiFieldSort($this->sortFields)
+				->limit(50)
 				->get();
 		}
+		
+		
+		$this->allSuggestionsCount = $this->searchClass::query ()
+			->exclude($this->idField, $this->exclude)
+			->search($this->searchFields, $value)
+			->multiFieldSort($this->sortFields)
+			->count();
 		
 		return $this->searchClass::query ()
 			->exclude($this->idField, $this->exclude)
 			->search($this->searchFields, $value)
 			->multiFieldSort($this->sortFields)
+			->limit(50)
 			->get();
 		
 	}
@@ -740,6 +763,7 @@ class Autofill extends Input {
 
 		$vars += [
 			'suggestions' =>  $suggestedProp,
+			'suggestion_count' => count ($suggestedProp),
 			'selected_method' => $this->selectedMethod,
 			'selected' => $selectedProp,
 			'remove_method' => $this->removeMethod,
@@ -750,7 +774,9 @@ class Autofill extends Input {
 			'no_results_message' => $this->noResultsMessage,
 			'no_more_results_message' => $this->noMoreResultsMessage,
 			'no_search_results_message' => $this->noSearchResultsMessage,
-			'no_more_current_results_message' => $this->noMoreCurrentResultsMessage
+			'no_more_current_results_message' => $this->noMoreCurrentResultsMessage,
+			'more_results_message' => $this->moreResultsMessage,
+			'all_suggestions_count' => $this->allSuggestionsCount
 		];
 	
 		

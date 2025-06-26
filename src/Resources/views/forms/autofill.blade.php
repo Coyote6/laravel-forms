@@ -38,11 +38,15 @@
 		<x-forms-icon.error.wrapped :display="$display_error_icon" :containerAttributes="$error_icon_container_attributes" :attributes="$error_icon_attributes"></x-forms-icon.error.wrapped>
 		<div x-show="showSuggestions" class="relative" @hover="showSuggestions=true">
 			<div class="w-full absolute z-10 -mt-1">
-				@if (count ($suggestions) > 0)
+				@if ($suggestion_count > 0)
 					<ul class="bg-white rounded-b-md border border-cool-gray-300 mb-2">
 						@foreach ($suggestions as $id => $name)
 							<li class="px-4 py-4 hover:bg-cool-gray-300 cursor-pointer" wire:click="{{ $selected_method }}('{{ $id }}', '{{ $name }}')" @click="showSuggestions = false">{{ $name }}</li>
 						@endforeach
+						@if ($all_suggestions_count > 50) 
+							<li class="px-4 py-4">{{ $more_results_message }}</li>
+						@endif
+
 					</ul>
 				@elseif (!is_null ($search) && $search != '' && $sameSearch && count ($selected) > 0)
 					<p class="bg-white text-green-500 px-4 py-4 rounded-b-md border border-cool-gray-300">{{ $no_more_current_results_message }}</p>
