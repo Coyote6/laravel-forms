@@ -4,6 +4,7 @@
 namespace Coyote6\LaravelForms\Traits;
 
 
+use Coyote6\LaravelForms\Form\Checkboxes;
 use Coyote6\LaravelForms\Form\File;
 use Coyote6\LaravelForms\Form\Image;
 
@@ -39,7 +40,15 @@ trait LivewireRules {
 					}
 				}
 				if (count ($r) > 0) {
-					$rules[$field->getLivewireModel()] = $r;
+					if ($field instanceof Checkboxes) {
+						foreach ($r as $id => $cb) {
+							if ($id == 'in'){
+								$rules[$field->getLivewireModel() . '.*'] = $cb;
+								unset ($r['in']);
+							}
+						}
+					}
+					$rules[$field->getLivewireModel()] = $r;	
 				}
 			}
 
@@ -63,7 +72,7 @@ trait LivewireRules {
 				}
 			}
 		}
-		
+
 		if (is_string ($fieldName) && $fieldName != '') {
 			$return = [];
 			if (isset ($rules[$fieldName])) {

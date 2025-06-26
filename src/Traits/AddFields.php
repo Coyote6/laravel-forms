@@ -7,6 +7,7 @@ namespace Coyote6\LaravelForms\Traits;
 use Coyote6\LaravelForms\Form\Autofill;
 use Coyote6\LaravelForms\Form\Button;
 use Coyote6\LaravelForms\Form\Checkbox;
+use Coyote6\LaravelForms\Form\Checkboxes;
 use Coyote6\LaravelForms\Form\Date;
 use Coyote6\LaravelForms\Form\Email;
 use Coyote6\LaravelForms\Form\Field;
@@ -121,6 +122,12 @@ trait AddFields {
 		$field = new Checkbox ($name);
 		$this->addField($field);
 		return $field;
+	}
+	
+	public function checkboxes ($name) {
+		$fieldGroup = new Checkboxes ($name);
+		$this->addFieldGroup ($fieldGroup);
+		return $fieldGroup;
 	}
 	
 	public function date ($name) {
