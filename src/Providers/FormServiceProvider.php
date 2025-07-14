@@ -57,7 +57,11 @@ class FormServiceProvider extends ServiceProvider {
 				is_string ($field) && $field != '' &&
 				is_string ($search) && $search != ''
 			) {
-				$this->where($field, 'like', '%' . $search . '%');
+				foreach (explode (' ', $search) as $seachString) {
+					$this->where(function ($query) use ($fields, $searchString) {
+						$query->orWhere($field, 'like', '%' . $searchString . '%');
+					});
+				}
 			}
 			
 			return $this;
@@ -76,11 +80,13 @@ class FormServiceProvider extends ServiceProvider {
 				is_string ($search) && $search != ''
 			) {
 				
-				$this->where(function ($query) use ($fields, $search) {
-					foreach ($fields as $field) {	
-						$query->orWhere($field, 'like', '%' . $search . '%');
-					}
-				});
+				foreach (explode (' ', $search) as $searchString) {
+					$this->where(function ($query) use ($fields, $searchString) {
+						foreach ($fields as $field) {	
+							$query->orWhere($field, 'like', '%' . $searchString . '%');
+						}
+					});
+				}
 				
 			}
 			
