@@ -527,6 +527,22 @@ The field will add 4 additional properties to the Livewire component.  These are
 
 Note: $this->imageAll may not be updated until after the form is generated or validated.
 
+Be sure to include the `\Coyote6\LaravelForms\Traits\WithFileUploads` trait.
+```php
+ 
+namespace App\Livewire;
+ 
+use Coyote6\LaravelForms\Form\Form;
+use Coyote6\LaravelForms\Livewire\Component;
+use Coyote6\LaravelForms\Traits\WithFileUploads;
+ 
+class Example extends Component {
+
+	use WithFileUploads;
+}
+```
+
+
 ###### Single File
 
 
@@ -535,8 +551,8 @@ public function store () {
 
 	$this->validate();
 
-	if ($this->file instanceof \Livewire\TemporaryUploadedFile) {
-		
+	if ($this->isTempFile ($this->file)) {
+
 		//
 		// Save File using the Livewire Temp File method
 		//
@@ -576,6 +592,8 @@ protected function generateForm () {
 }
 ```
 
+
+
 ###### Multi File
 
 
@@ -591,8 +609,9 @@ public function store () {
 		// Multi File Method
 		// @see https://laravel-livewire.com/docs/2.x/file-uploads#multiple-files
 		// 
-		$this->file->store ('dir');
-		
+		if ($this->isTempFile ($file)) {
+			$file->store ('dir');
+		}
 	}
 	
 

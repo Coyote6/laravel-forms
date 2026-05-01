@@ -85,14 +85,17 @@ class Select extends Field {
 		// @see https://github.com/livewire/livewire/issues/998
 		// @see https://github.com/livewire/livewire/issues/860
 		//
-		$livewireReturnUrl = route('livewire.message','');
-		$currentUrl = substr (url()->current(), 0, strlen ($livewireReturnUrl));
-		$isLivewireReturnUrl = ($livewireReturnUrl == $currentUrl);
+		//$livewireReturnUrl = route('livewire.message','');
+		//$currentUrl = substr (url()->current(), 0, strlen ($livewireReturnUrl));
+		//$isLivewireReturnUrl = ($livewireReturnUrl == $currentUrl);
+
+		$isLivewireRoute = $this->form->isLivewireRoute();
+
 	
 		$hasDefault = false;
 		foreach ($this->options as $o) {
 			
-			if (!$isLivewireReturnUrl) {
+			if (!$isLivewireRoute) {
 				if (!$this->hasAttribute('multiple')) {
 					if ($o->value == $val) {
 						$o->addAttribute('selected');

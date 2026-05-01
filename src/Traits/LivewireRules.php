@@ -85,8 +85,8 @@ trait LivewireRules {
 		}
 		
 		
-		// Add a fake rule to prevent errors if the rules array is empty.
-		if ($rules === []) {
+		// Add a fake rule to prevent errors in Livewire 2 if the rules array is empty.
+		if ($rules === [] && static::getLwVersion() == 2) {
 			$this->setComponentProperty('noLivewireRules', time());
 			$rules['noLivewireRules'] = 'nullable|sometimes';
 		}

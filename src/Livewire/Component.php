@@ -4,7 +4,7 @@
 namespace Coyote6\LaravelForms\Livewire;
 
 
-use Coyote6\LaravelForms\Contracts\HasForm;
+use Coyote6\LaravelForms\Traits\HasForm;
 
 use function Livewire\str;
 use Livewire\Component as LivewireComponent;
@@ -15,7 +15,8 @@ use Illuminate\Validation\ValidationException;
 
 
 abstract class Component extends LivewireComponent {
-	
+
+	use HasForm;
 	
 	public function template () {
 
@@ -69,7 +70,7 @@ abstract class Component extends LivewireComponent {
 	}
 	
 	
-	public function validateOnly ($field, $rules = null, $messages = [], $attributes = []) {
+	public function validateOnly ($field, $rules = null, $messages = [], $attributes = [], $dataOverrides = []) {
     	$validatedData = parent::validateOnly ($field, $rules, $messages, $attributes);
 		$validatedData = $this->form()->postValidation ($validatedData);
         return $validatedData;

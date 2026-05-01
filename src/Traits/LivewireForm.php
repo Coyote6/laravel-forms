@@ -8,7 +8,14 @@ trait LivewireForm {
 
 	
 	protected $livewireComponent;
-		
+	
+	//
+	// LW Version
+	//
+	public static function getLwVersion () {
+		return config ('forms.livewire-version', 3);
+	}
+	
 	//
 	// Livewire Component
 	//
@@ -70,10 +77,25 @@ trait LivewireForm {
 		return $this->isLivewireForm();	
 	}
 	
+	
 	public function isLivewireRoute () {
-		if ($this->isLwForm() && url()->current() == route ('livewire.message', $this->livewireComponent::getName())) {
+
+		$lw = new \Livewire\LivewireManager();
+
+		// Fallback Method
+		if (config ('forms.livewire-version', 3) <= 2) {
+			if ($this->isLwForm() && $lw->isDefinitelyLivewireRequest()) {
+				return true;
+			}
+			
+			return false;
+		} 
+		
+		
+		if ($this->isLwForm() && $lw->isLivewireRequest()) {
 			return true;
 		}
+		
 		return false;
 	}
 	
@@ -104,7 +126,14 @@ trait LivewireForm {
 	//
 	
 	public function wireSubmit (string $methodName) {
-		$this->addAttribute('wire:submit.prevent', $methodName);
+		
+		if (config ('forms.livewire-version', 3) >= 3) {
+			$this->addAttribute('wire:submit.prevent', $methodName);
+			$this->addAttribute('wire:loading.attr', 'disabled');
+		} else { 
+			$this->addAttribute('wire:submit.prevent', $methodName);
+		}
+
 		return $this;
 	}
 

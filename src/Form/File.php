@@ -117,6 +117,14 @@ class File extends Input {
 		return $filename;
 	}
 
+	public static function tempFileClass () {
+		$lwVersion = config('form.livewire-version', 3);
+		if ($lwVersion >= 3) {
+			return '\\Livewire\\Features\\SupportFileUploads\\TemporaryUploadedFile';
+		}
+		return '\\Livewire\\TemporaryUploadedFile';
+	}
+
 	
 	
 	//
@@ -134,13 +142,15 @@ class File extends Input {
 	// @return void
 	//
 	protected function checkLwSetup (): void {
+
+		$tempFileClass = static::tempFileClass();
 			
 		if (!is_object ($this->form->getComponent())) {
 			trigger_error ("The '{$this->name}' field is not properly configured. Please be sure to add the Livewire component to the form()/new Form () call as a parameter.  Please see the documentation for further instructions.");
 		}
 		
-		if (!class_exists ('\Livewire\TemporaryUploadedFile')) {
-			trigger_error ("The \Livewire\TemporaryUploadedFile class was not found. Please make sure to install Livewire before using as a Livewire enabled form.");
+		if (!class_exists ($tempFileClass)) {
+			trigger_error ("The " . $tempFileClass . " class was not found. Please make sure to install Livewire before using as a Livewire enabled form.");
 		}
 		
 		if (!property_exists ($this->form->getComponent(), $this->livewireModel)) {
@@ -227,6 +237,7 @@ class File extends Input {
 	protected function setPreviousUploads (): array {
 						
 		$previouslyUploaded = $this->initPreviousProperty();
+		$tempFileClass = static::tempFileClass();
 	
 		if ($this->isMulti ()) {
 			
@@ -237,7 +248,7 @@ class File extends Input {
 						'type' => gettype ($v),
 						'model' => ($v instanceof \Illuminate\Database\Eloquent\Model) ? get_class ($v) : false,
 						'model-id' => ($v instanceof \Illuminate\Database\Eloquent\Model) ? $v->getKey() : false,
-						'upload' => (class_exists ('\Livewire\TemporaryUploadedFile') && $v instanceof \Livewire\TemporaryUploadedFile),
+						'upload' => (class_exists ($tempFileClass) && $v instanceof $tempFileClass),
 						'value' => $v,
 						'preview-url' => $this->getPreviewUrl ($v),
 						'url' => $this->getUrl ($v),
@@ -254,7 +265,7 @@ class File extends Input {
 					'type' => gettype ($this->value),
 					'model' => ($this->value instanceof \Illuminate\Database\Eloquent\Model) ? get_class ($this->value) : false,
 					'model-id' => ($this->value instanceof \Illuminate\Database\Eloquent\Model) ? $this->value->getKey() : false,
-					'upload' => (class_exists ('\Livewire\TemporaryUploadedFile') && $this->value instanceof \Livewire\TemporaryUploadedFile),
+					'upload' => (class_exists ($tempFileClass) && $this->value instanceof $tempFileClass),
 					'value' => $this->value,
 					'preview-url' => $this->getPreviewUrl ($this->value),
 					'url' => $this->getUrl ($this->value),
@@ -277,6 +288,9 @@ class File extends Input {
 		foreach ($this->getPreviousUploads() as $hash => $value) {
 			$allUploads[$hash] = $value;	
 		}
+
+		$tempFileClass = static::tempFileClass();
+
 		
 		
 		//
@@ -289,7 +303,7 @@ class File extends Input {
 				foreach ($uploaded as $file) {
 // Change hash to md5 of the file?
 					$hash = md5 ($file->getFilename());
-					if ($file instanceof \Livewire\TemporaryUploadedFile && !isset ($allUploads[$hash])) {
+					if ($file instanceof $tempFileClass && !isset ($allUploads[$hash])) {
 						$allUploads[$hash] = [
 							'type' => 'object',
 							'model' => false,
@@ -308,7 +322,7 @@ class File extends Input {
 		// Single File Upload
 		//
 		else {
-			if ($uploaded && $uploaded instanceof \Livewire\TemporaryUploadedFile) {
+			if ($uploaded && $uploaded instanceof $tempFileClass) {
 // Change hash to md5 of the file?
 				$hash = md5 ($uploaded->getFilename());
 				if (!isset ($allUploads[$hash])) {
@@ -496,11 +510,11 @@ class File extends Input {
 	
 	
 	protected static function getHashedKey ($value) {
-		
+		$tempFileClass = static::tempFileClass();
 		if (is_object ($value) && $value instanceof \Illuminate\Database\Eloquent\Model) {
 			return md5 ($value->getKey());
 		}
-		else if (is_object ($value) && class_exists ('\Livewire\TemporaryUploadedFile') && $value instanceof \Livewire\TemporaryUploadedFile) {
+		else if (is_object ($value) && class_exists ($tempFileClass) && $value instanceof $tempFileClass) {
 			return md5 ($value->getFilename());
 		}
 		else if (!is_null ($value)) {
@@ -512,8 +526,9 @@ class File extends Input {
 	
 	
 	protected static function getFilename ($value): string {
+		$tempFileClass = static::tempFileClass();
 		if (is_object ($value)) {
-			if (class_exists ('\Livewire\TemporaryUploadedFile') && $value instanceof \Livewire\TemporaryUploadedFile) {
+			if (class_exists ($tempFileClass) && $value instanceof $tempFileClass) {
 				return $value->getClientOriginalName();
 			}
 			else if (
@@ -545,11 +560,13 @@ class File extends Input {
 	
 	
 	protected function getUrl ($value): string|false  {
-		
+	
+		$tempFileClass = static::tempFileClass();
+
 		if (is_object ($value)) {
 			
 			// Do not allow temp files to be clicked on for safety reasons.
-			if (class_exists ('\Livewire\TemporaryUploadedFile') && $value instanceof \Livewire\TemporaryUploadedFile) {			
+			if (class_exists ($tempFileClass) && $value instanceof $tempFileClass) {			
 				return false;
 			}
 			else if (class_exists ('Coyote6\LaravelMedia\Models\Image') && $value instanceof \Coyote6\LaravelMedia\Models\Image) {
@@ -577,6 +594,8 @@ class File extends Input {
 	protected function getPreviewUrl ($value) {
 		
 		$accessTimes = $this->getTempAccessTimes();
+		$tempFileClass = static::tempFileClass();
+
 
 #
 # To Do:
@@ -585,7 +604,7 @@ class File extends Input {
 #`
 
 		if (is_object ($value)) {
-			if (class_exists ('\Livewire\TemporaryUploadedFile') && $value instanceof \Livewire\TemporaryUploadedFile) {
+			if (class_exists ($tempFileClass) && $value instanceof $tempFileClass) {
 					
 				// Get the extension, and if not found,
 				// attempt to pull it from the file name.	

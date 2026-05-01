@@ -1,26 +1,56 @@
 <?php
 
 return [	
-	
+
+	/*
+	|--------------------------------------------------------------------------
+	| Livewire
+	|--------------------------------------------------------------------------
+	|
+	| Settings for Livewire integration.
+	|
+	*/
+
+	// Livewire Version (Major Version)
+	//
+	// @return int
+	//
+	'livewire-version' => (int) env('LIVEWIRE_VERSION', 3),
+
+	// Livewire Default Model Binding
+	//
+	// @values ['default', 'live', 'blur', 'debounce', 'defer']
+	// @return string
+	//
+	'livewire-default-model-binding' => (string) env('LIVEWIRE_DEFAULT_MODEL_BINDING', 'default'),
+
 	/*
 	|--------------------------------------------------------------------------
 	| Cache
 	|--------------------------------------------------------------------------
-	|
-	| Cache the form templates to skip checking folders for custom templates.
-	| If turned on, once a template is found it is stored in the cache for that
-	| field and form.  To release the cache either set the field or form's cache
-	| property to false. $form->cache = false, $field->cache = false or set this
-	| config to false to refresh all forms.
-	|
-	| If double check is set to true it will double check the existance of a
-	| cached template, before attempting to output the form or field. Set to
-	| false to save time checking its existance.
-	|
-	| @return bool
-	|
 	*/
+
+	//
+	// Cache Forms
+	//
+	// Cache the form templates to skip checking folders for custom templates.
+	// If turned on, once a template is found it is stored in the cache for that
+	// field and form.  To release the cache either set the field or form's cache
+	// property to false. $form->cache = false, $field->cache = false or set this
+	// config to false to refresh all forms.
+	//
+	// @return bool
 	'cache' => env('FORM_CACHE', true),
+
+	//
+	// Double Check Cache.
+	//
+	// If double check is set to true it will double check the existance of a
+	// cached template, before attempting to output the form or field. Set to
+	// false to save time checking its existance.
+	//
+	// @return bool
+	//
 	'cache--double-check' => true,
 	
     

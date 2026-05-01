@@ -188,6 +188,13 @@ class FormServiceProvider extends ServiceProvider {
 		//
 		
 		Component::macro('notify', function ($message, $status = null) {	
+			if (config ('forms.livewire-version', 3) >= 3) {
+				$this->dispatch('notify', 
+					text: $message, 
+					status: $status
+				);
+				return;
+			}
 			$this->dispatchBrowserEvent('notify', [
 				'text'=> $message, 
 				'status' => $status
@@ -195,23 +202,47 @@ class FormServiceProvider extends ServiceProvider {
 		});
 		
 		Component::macro('notifySuccess', function ($message) {
+			$status = 'success';
+			if (config ('forms.livewire-version', 3) >= 3) {
+				$this->dispatch('notify', 
+					text: $message, 
+					status: $status
+				);
+				return;
+			}
 			$this->dispatchBrowserEvent('notify', [
 				'text'=> $message, 
-				'status' => 'success'
+				'status' => $status
 			]);
 		});
 		
 		Component::macro('notifyWarning', function ($message) {
+			$status = 'warning';
+			if (config ('forms.livewire-version', 3) >= 3) {
+				$this->dispatch('notify', 
+					text: $message, 
+					status: $status
+				);
+				return;
+			}
 			$this->dispatchBrowserEvent('notify', [
 				'text'=> $message, 
-				'status' => 'warning'
+				'status' => $status
 			]);
 		});
 		
 		Component::macro('notifyError', function ($message) {
+			$status = 'error';
+			if (config ('forms.livewire-version', 3) >= 3) {
+				$this->dispatch('notify', 
+					text: $message, 
+					status: $status
+				);
+				return;
+			}
 			$this->dispatchBrowserEvent('notify', [
 				'text'=> $message, 
-				'status' => 'error'
+				'status' => $status
 			]);
 		});
 		
@@ -283,5 +314,6 @@ class FormServiceProvider extends ServiceProvider {
     protected function registerComponent (string $component) {
 		Blade::component ('forms::components.' . $component, 'forms-' . $component);
     }
+
   
 }

@@ -25,17 +25,31 @@
 	@if ($has_confirm_field && $is_livewire_form)
 		@push('scripts')
 			<script>
-				document.addEventListener('livewire:load', function () {
-					if (!window.formsUpdatedConfirmationLoaded) {
-						window.formsUpdatedConfirmationLoaded = true;
-						Livewire.on('updatedConfirmation', id => {
-							var el = document.getElementById(id);
-							var	val = el.value;
-							var name = el.getAttribute('data-model');
-							@this.set(name, val);
-						});
-					}
-				});
+				@if (config('forms.livewire-version', 3) >= 3)
+					document.addEventListener('livewire:init', function () {
+						if (!window.formsUpdatedConfirmationLoaded) {
+							window.formsUpdatedConfirmationLoaded = true;
+							Livewire.on('updatedConfirmation', id => {
+								var el = document.getElementById(id);
+								var	val = el.value;
+								var name = el.getAttribute('data-model');
+								@this.set(name, val);
+							});
+						}
+					});
+				@else 
+					document.addEventListener('livewire:load', function () {
+						if (!window.formsUpdatedConfirmationLoaded) {
+							window.formsUpdatedConfirmationLoaded = true;
+							Livewire.on('updatedConfirmation', id => {
+								var el = document.getElementById(id);
+								var	val = el.value;
+								var name = el.getAttribute('data-model');
+								@this.set(name, val);
+							});
+						}
+					});
+				@endif
 			</script>
 		@endpush
 	@endif

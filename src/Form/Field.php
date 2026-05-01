@@ -73,6 +73,10 @@ abstract class Field {
 			return $this->livewireRules();
 		}
 	}
+
+	public function form () {
+		return $this->form;
+	}
 	
 	
 	protected function defaultRules() {

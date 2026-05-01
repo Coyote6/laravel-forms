@@ -4,7 +4,7 @@
 namespace Coyote6\LaravelForms\Traits;
 
 
-use Livewire\TemporaryUploadedFile;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads as WithLivewireFileUploads;
 
 
@@ -128,7 +128,12 @@ trait WithFileUploads {
 	
 	
 	public function isTempFile ($file) {
-		if ($file instanceof TemporaryUploadedFile) {
+		$lwVersion = config('form.livewire-version', 3);
+		$tempFileClass = '\\Livewire\\Features\\SupportFileUploads\\TemporaryUploadedFile';
+		if ($lwVersion == 2) {
+			$tempFileClass = '\\Livewire\\TemporaryUploadedFile';
+		}
+		if ($file instanceof $tempFileClass) {
 			return true;
 		}
 		return false;

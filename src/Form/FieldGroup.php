@@ -83,6 +83,10 @@ class FieldGroup {
 		return $this;
 
 	}
+
+	public function form () {
+		return $this->form;
+	}
 	
 	public function isRequired () {
 		return false;
