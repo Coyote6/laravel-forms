@@ -4,15 +4,17 @@
 namespace Coyote6\LaravelForms\Providers;
 
 
+use Coyote6\LaravelForms\Support\FormHelper;
+
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\Compilers\BladeCompiler;
+use Illuminate\Support\Facades\View;
 
-use Livewire\Component;
 
 
-require __DIR__ . '/../Helpers/Aliases.php';
+//require __DIR__ . '/../Helpers/Aliases.php';
 
 
 class FormServiceProvider extends ServiceProvider {
@@ -24,8 +26,14 @@ class FormServiceProvider extends ServiceProvider {
 	* @return void
 	*/
 	public function register() {
-		$this->loadViewsFrom (__DIR__ . '/../Resources/views/', 'forms');
-		$this->mergeConfigFrom (__DIR__ . '/../Resources/config/forms.php', 'forms');
+
+		// Register the form facade
+        $this->app->singleton('coyote6.form', function ($app) {
+            return new FormHelper();
+        });
+
+		$this->mergeConfigFrom (__DIR__ . '/../../config/forms.php', 'forms');
+
 	}
 	
 	
@@ -37,15 +45,18 @@ class FormServiceProvider extends ServiceProvider {
 	public function boot() {
 	
 		$this->publishes([
-			__DIR__ . '/../Resources/config/forms.php' => config_path('forms.php'),
+			__DIR__ . '/../../config/forms.php' => config_path('forms.php'),
 		], 'forms');
+
+		// Register Views Namespace
+		$this->loadViewsFrom (__DIR__ . '/../../resources/views/', 'forms');
 		
 		
 		//
 		// Blade Components
 		//
-		$this->configureComponents();
-		
+	//	$this->configureComponents();
+		/*
 		
 		//
 		// Query Builders
@@ -261,7 +272,7 @@ class FormServiceProvider extends ServiceProvider {
 		Component::macro('flashError', function ($message) {
 			session()->flash('messages', [['text' => $message, 'status' => 'error']]);
 		});
-	
+	*/
 	}
 	
 	
@@ -272,7 +283,7 @@ class FormServiceProvider extends ServiceProvider {
      */
     protected function configureComponents () {
 	    $this->callAfterResolving (BladeCompiler::class, function () {
-			
+		/*	
 			// 
 			// Buttons
 			//
@@ -300,7 +311,7 @@ class FormServiceProvider extends ServiceProvider {
 			$this->registerComponent ('file');
 			$this->registerComponent ('textarea');
 			$this->registerComponent ('help');
-		
+		*/
 		});
     }
   

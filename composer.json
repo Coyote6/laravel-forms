@@ -1,8 +1,8 @@
 {
     "name": "coyote6/laravel-forms",
+    "description": "Generate the html for forms and assist with the validation process in Laravel with optional Livewire/Flux integration.",
     "type": "library",
-    "description": "Simple class used to generate the html for forms and assist with the validation process in Laravel with optional Livewire and Tailwind integration.",
-    "keywords": ["laravel","forms","validation","html","livewire", "tailwind"],
+    "keywords": ["laravel","forms","validation","html","livewire", "flux", "tailwind"],
     "homepage": "https://coyote6.com",
     "license": "MIT",
     "authors": [
@@ -16,13 +16,23 @@
     "autoload": {
         "psr-4": {
             "Coyote6\\LaravelForms\\": "src/"
-        }
+        },
+        "files": [
+            "helpers.php"
+        ]
     },
     "extra": {
         "laravel": {
             "providers": [
                 "Coyote6\\LaravelForms\\Providers\\FormServiceProvider"
-            ]
+            ],
+            "aliases": {
+                "Form": "Coyote6\\LaravelForms\\Facades\\Support\\FormHelper"
+            }
         }
+    },
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^10.0|^11.0|^12.0"
     }
 }
