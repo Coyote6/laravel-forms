@@ -3,16 +3,18 @@
 	
 namespace Coyote6\LaravelForms\Traits;
 
+use Coyote6\LaravelForms\Components\Email;
 use Coyote6\LaravelForms\Components\Input;
 use Coyote6\LaravelForms\Components\Textarea;
 
 
 trait HasInput {
 
-	protected Input|Textarea|false $input = false;
+	protected Input|Email|Textarea|false $input = false;
 
 	public const array ALLOWED_INPUT_COMPONENTS = [
 		'Input' => Input::class,
+		'Email' => Email::class,
 		'Textarea' => Textarea::class,
 	];
 
@@ -23,6 +25,20 @@ trait HasInput {
 	// @return [] - Example: ['Input','Textarea']
 	//
 	abstract protected function allowedInputComponents (): array;
+
+
+	// Validate Input Set
+	//
+	// Ensure that the input is set and throw an error if not.
+	//
+	// @param string $errorMessage - The message to display to the developer.
+	// @return void
+	//
+	public function validateInputSet (string $errorMessage = 'An input must be set.'): void {
+		if ($this->input === false) {
+			trigger_error($errorMessage);
+		}
+	}
 
 	
 	
@@ -47,6 +63,10 @@ trait HasInput {
 		foreach ($allowed as $a) {
 			if ($input instanceof $a) {
 				$this->input = $input;
+				$name = $this->input->getName();
+				if ($name && is_callable ([$this, 'setInput'])) {
+					$this->setError ($name);
+				}
 				return $this;
 			} 
 		}
@@ -61,6 +81,10 @@ trait HasInput {
 		}
 		
 		$this->input = new Input($input);
+		if (is_callable ([$this, 'setInput'])) {
+			$this->setError ($input);
+		}
+
 		return $this;
 	}
 

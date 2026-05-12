@@ -4,10 +4,13 @@
 namespace Coyote6\LaravelForms\Traits;
 
 
+use Coyote6\LaravelForms\Traits\HasInput;
 use Illuminate\Support\Collection;
 
 
 trait FieldRules {
+
+	use HasInput;
 		
 
 	// Rules
@@ -24,16 +27,10 @@ trait FieldRules {
 	}
 	
 
-	public function validateInputSet (): void {
-		if ($this->input === false) {
-			trigger_error('An input must be set on the field prior to adding any rules.');
-		}
-	}
-
 
 	public function addRule (mixed $rule, $ruleName = null): self {
 
-		$this->validateInputSet();
+		$this->validateInputSet('An input must be set on the field prior to adding any rules.');
 		$this->input->addRule ($rule, $ruleName);
 		return $this;
 
@@ -42,7 +39,7 @@ trait FieldRules {
 	
 	public function addRules (Collection|array $rules): self {
 		
-		$this->validateInputSet();
+		$this->validateInputSet('An input must be set on the field prior to adding any rules.');
 		$this->input->addRules ($rules);
 		return $this;
 	
@@ -51,7 +48,7 @@ trait FieldRules {
 	
 	public function removeRule ($ruleName): self {
 	
-		$this->validateInputSet();
+		$this->validateInputSet('An input must be set on the field prior to adding any rules.');
 		$this->input->removeRule ($ruleName);
 		return $this;
 
@@ -65,7 +62,7 @@ trait FieldRules {
 	//
 	public function isRequired (): bool {
 		
-		$this->validateInputSet();
+		$this->validateInputSet('An input must be set on the field prior to adding any rules.');
 		return $this->input->isRequired();
 
 	}
@@ -79,7 +76,7 @@ trait FieldRules {
 	//
 	public function required (): self {
 		
-		$this->validateInputSet();
+		$this->validateInputSet('An input must be set on the field prior to adding any rules.');
 		$this->input->required();
 		if ($this->label) {
 			$this->label->fieldIsRequired();
@@ -107,7 +104,7 @@ trait FieldRules {
 	//
 	public function nullable (): self {
 
-		$this->validateInputSet();
+		$this->validateInputSet('An input must be set on the field prior to adding any rules.');
 		$this->input->nullable();
 		if ($this->label) {
 			$this->label->fieldIsNotRequired();
@@ -135,7 +132,7 @@ trait FieldRules {
 	//
 	public function disabled (): self {
 
-		$this->validateInputSet();
+		$this->validateInputSet('An input must be set on the field prior to disabling.');
 		$this->input->disabled();
 		return $this;
 		
@@ -162,7 +159,7 @@ trait FieldRules {
 	//
 	public function enabled (): self {
 
-		$this->validateInputSet();
+		$this->validateInputSet('An input must be set on the field prior to enabling.');
 		$this->input->enabled();
 		return $this;
 	}

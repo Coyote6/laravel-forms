@@ -217,6 +217,7 @@ trait Rules {
 	// @return self
 	//
 	public function require (): self {
+		$this->addRulesFromOutside('required');
 		return $this->required();
 	}
 	

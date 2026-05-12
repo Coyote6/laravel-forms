@@ -7,7 +7,7 @@ namespace Coyote6\LaravelForms\Traits;
 use Coyote6\LaravelForms\Support\FormHelper;
 
 
-trait LivewireModel {
+trait LivewireModelAbstract {
 	
 	
 	protected string|false $livewireModel = false;
@@ -75,7 +75,7 @@ trait LivewireModel {
                 break;
             
             case 'debounce':
-                $attr = 'wire:model.live.debounce.' . $this->livewireModelDebounce . 'ms';
+                $attr = 'wire:model.live.debounce.' . $this->livewireDebounce . 'ms';
                 break;
 
             case 'live':
@@ -106,14 +106,14 @@ trait LivewireModel {
 	// LW
 	//
 	
-    // Livewire Model
+    // Livewire Model Self
     //
     // Sets the Livewire model for this field. This will determine which property on the Livewire component this field is bound to, and how it updates.
     //
     // @param string|null $name - Optional name to set for the Livewire model. If not provided, it will use the field's name property.
     // @return self
     //
-	public function livewireModel (?string $name = null): self {
+	public function livewireModelSelf (?string $name = null): self {
 		$lwFormsDefault = config ('forms.livewire--default-model-binding', 'default');
 		switch ($lwFormsDefault) {
 			case 'default':
@@ -129,7 +129,18 @@ trait LivewireModel {
 		}
 		return $this;
 	}
-	
+
+
+    // Livewire Model
+    //
+    // This determines which component to call livewireModelSelf on and is set
+    // by the component or field calling it.
+    //
+    // @param string|null $name - Optional name to set for the Livewire model. If not provided, it will use the field's name property.
+    // @return self
+    //
+    abstract public function livewireModel (?string $name = null): self;
+
 
     // Lw Model
     //
@@ -154,26 +165,38 @@ trait LivewireModel {
 
 
 
+
     //
-	// LW (Default)
+	// LW Self (Default)
     //
 	// Use Livewire's default method for model binding.
 	//
 
 
-    // Livewire Model Default
+    // Livewire Model Default Self
     //
     // Sets the Livewire model for this field using Livewire's default method for model binding.
     //
     // @param string|null $name - Optional name to set for the Livewire model. If not provided, it will use the field's name property.
     // @return self
     // 
-	public function livewireModelDefault (?string $name = null): self {
+	public function livewireModelDefaultSelf (?string $name = null): self {
 		$this->livewireModel = $this->getLivewireModelName($name);
 		$this->livewireLoad = 'default';
         $this->updateLivewireModelAttribute();
 		return $this;
 	}
+
+
+    // Livewire Model Default
+    //
+    // This determines which component to call livewireModelDefaultSelf on and is set
+    // by the component or field calling it.    
+    //
+    // @param string|null $name - Optional name to set for the Livewire model. If not provided, it will use the field's name property.
+    // @return self
+    // 
+	abstract public function livewireModelDefault (?string $name = null): self;
 	
 
     // Lw Model Default
@@ -198,19 +221,20 @@ trait LivewireModel {
 	}
 
 
+
 	//
-	// Lw Live
+	// Lw Live Self
 	//
 	
 
-    // Livewire Model Live
+    // Livewire Model Live Self
     //
     // Sets the Livewire model for this field using Livewire's live method for model binding. This will update the Livewire property on every keystroke or change event.
     //
     // @param string|null $name - Optional name to set for the Livewire model. If not provided, it will use the field's name property.
     // @return self
     //
-	public function livewireModelLive (?string $name = null): self {
+	public function livewireModelLiveSelf (?string $name = null): self {
 		$this->livewireModel = $this->getLivewireModelName($name);
 		$this->livewireLoad = 'live';
         $this->updateLivewireModelAttribute();
@@ -218,6 +242,17 @@ trait LivewireModel {
 	}
 
 
+    // Livewire Model Live
+    //
+    // This determines which component to call livewireModelLiveSelf on and is set
+    // by the component or field calling it.
+    //
+    // @param string|null $name - Optional name to set for the Livewire model. If not provided, it will use the field's name property.
+    // @return self
+    //
+	abstract public function livewireModelLive (?string $name = null): self;
+	
+	
     // Lw Model Live
     //
     // @alias livewireModelLive
@@ -238,8 +273,9 @@ trait LivewireModel {
 	public function lwLive (?string $name = null): self {
 		return $this->livewireModelLive ($name);
 	}
-	
-	
+
+
+
 	//
 	// Lw Blur (Formerly Lazy)
 	//
@@ -255,9 +291,10 @@ trait LivewireModel {
     // @param string|null $name - Optional name to set for the Livewire model. If not provided, it will use the field's name property.
     // @return self
     //
-	public function livewireModelBlur (?string $name = null): self {
+	public function livewireModelBlurSelf (?string $name = null): self {
 		$this->livewireModel = $this->getLivewireModelName($name);
-        if (FormHelper::lwVersion() >= 3) {
+        $fh = new FormHelper();
+        if ($fh->lwVersion() >= 3) {
             $this->livewireLoad = 'blur';
             $this->updateLivewireModelAttribute();
         } 
@@ -269,7 +306,18 @@ trait LivewireModel {
 	}
 
 
-    // Lw Model Blur
+    // Livewire Model Blur
+    //
+    // This determines which component to call livewireModelBlurSelf on and is set
+    // by the component or field calling it.
+    //
+    // @param string|null $name - Optional name to set for the Livewire model. If not provided, it will use the field's name property.
+    // @return self
+    //
+	abstract public function livewireModelBlur (?string $name = null): self;
+
+
+	  // Lw Model Blur
     //
     // @alias livewireModelBlur
     // @param string|null $name - Optional name to set for the Livewire model. If not provided, it will use the field's name property.
@@ -322,13 +370,14 @@ trait LivewireModel {
 	public function lwLazy (?string $name = null): self {
 		return $this->livewireModelBlur ($name);
 	}
-	
-	
+
+
+
 	//
 	// Lw Debounce
 	//
 	
-    // Livewire Model Debounce
+    // Livewire Model Debounce Self
     //
     // Sets the Livewire model for this field using Livewire's debounce method for model binding. 
     // This will update the Livewire property after the user stops typing for a specified amount of time (debounce delay).
@@ -337,7 +386,7 @@ trait LivewireModel {
     // @param int $milliseconds - The debounce delay in milliseconds. Default is 750ms.
     // @return self
     //
-	public function livewireModelDebounce (?string $name = null, int $milliseconds = 750): self {
+	public function livewireModelDebounceSelf (?string $name = null, int $milliseconds = 750): self {
 
 		$this->livewireModel = $this->getLivewireModelName($name);
 		$this->livewireLoad = 'debounce';
@@ -394,9 +443,21 @@ trait LivewireModel {
 
 		return $this;
 	}
-	
+
 
     // Livewire Model Debounce
+    //
+    // This determines which component to call livewireModelDebounceSelf on and is set
+    // by the component or field calling it.
+    //
+    // @param string|null $name - Optional name to set for the Livewire model. If not provided, it will use the field's name property.
+    // @param int $milliseconds - The debounce delay in milliseconds. Default is 750ms.
+    // @return self
+    //
+	abstract public function livewireModelDebounce (?string $name = null, int $milliseconds = 750): self;
+	
+
+    // Lw Model Debounce
     //
     // @alias livewireModelDebounce
     // @param string|null $name - Optional name to set for the Livewire model. If not provided, it will use the field's name property.
@@ -408,7 +469,7 @@ trait LivewireModel {
 	}
 	
 
-    // Livewire Model Debounce
+    // Lw Model Debounce
     //
     // @alias livewireModelDebounce
     // @param string|null $name - Optional name to set for the Livewire model. If not provided, it will use the field's name property.
@@ -420,11 +481,12 @@ trait LivewireModel {
 	}
 
 
+
 	//
 	// Lw Defer
 	//
 	
-    // Livewire Model Defer
+    // Livewire Model Defer Self
     //
     // Sets the Livewire model for this field using Livewire's defer method for model binding. 
     // This will update the Livewire property only when an action is taken that triggers an update, 
@@ -434,7 +496,7 @@ trait LivewireModel {
     // @param string|null $name - Optional name to set for the Livewire model. If not provided, it will use the field's name property.
     // @return self
     //
-	public function livewireModelDefer (?string $name = null): self {
+	public function livewireModelDeferSelf (?string $name = null): self {
 		$this->livewireModel = $this->getLivewireModelName($name);
 		$this->livewireLoad = 'defer';
         $this->updateLivewireModelAttribute();
@@ -442,7 +504,18 @@ trait LivewireModel {
 	}
 
 
-    // Lw Model Defer
+    // Livewire Model Defer
+    //
+    // This determines which component to call livewireModelDeferSelf on and is set
+    // by the component or field calling it.
+    //
+    // @param string|null $name - Optional name to set for the Livewire model. If not provided, it will use the field's name property.
+    // @return self
+    //
+	abstract public function livewireModelDefer (?string $name = null): self;
+
+
+        // Lw Model Defer
     //
     // @alias livewireModelDefer
     // @param string|null $name - Optional name to set for the Livewire model. If not provided, it will use the field's name property.
@@ -462,7 +535,7 @@ trait LivewireModel {
 	public function lwDefer (?string $name = null): self {
 		return $this->livewireModelDefer ($name);
 	}
-	
+
 	
 	//
 	// Retrieval

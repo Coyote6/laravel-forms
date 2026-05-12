@@ -9,7 +9,7 @@ use Coyote6\LaravelForms\Traits\HasDescription;
 use Coyote6\LaravelForms\Traits\HasError;
 use Coyote6\LaravelForms\Traits\HasInput;
 use Coyote6\LaravelForms\Traits\HasLabel;
-use Coyote6\LaravelForms\Traits\LivewireModel;
+use Coyote6\LaravelForms\Traits\LivewireModelField;
 use Coyote6\LaravelForms\Traits\Render;
 
 
@@ -20,7 +20,7 @@ class Field {
 		HasDescription,
 		HasInput,
 		HasError,
-		LivewireModel,
+		LivewireModelField,
 		FieldRules,
         Render;
 
@@ -29,7 +29,8 @@ class Field {
 	protected string $defaultComponent = 'field';
 
     public function __construct (string $name) {
-		$this->name = $name;
+		$this->name = $name . '--field';
+		$this->inputName = $name;
 	}
 
 	// Allow all types of inputs.
@@ -38,6 +39,9 @@ class Field {
 	}
 
 	protected function prerender () {
+		if ($this->input) {
+			$this->input->setName($this->inputName);
+		}
 		$this->addTemplateVariables ([
 			'attributes' => $this->getAttributes(),
 			'label' => $this->label,

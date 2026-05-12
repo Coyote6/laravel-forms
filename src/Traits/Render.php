@@ -204,10 +204,18 @@ trait Render {
     }
 
     public function getTemplate (): string {
+        
         if (property_exists($this, 'template') && is_string ($this->template) && $this->template != '') {
             return $this->template;
         }
+        
+        $template = 'forms.' . $this->getTheme() . $this->getThemeSubdirectory() . '.' . $this->getComponent();
+        if (view()->exists($template)) {
+            return $template;
+        }
+
         return 'forms::' . $this->getTheme() . $this->getThemeSubdirectory() . '.' . $this->getComponent();
+
     }
 
 

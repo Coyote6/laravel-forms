@@ -22,7 +22,7 @@ trait HasError {
 			return $this;
 		} 
 		
-		$this->input = new Input($input);
+		$this->error = new Error ($error);
 		return $this;
 	}
 

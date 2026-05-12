@@ -6,7 +6,7 @@ namespace Coyote6\LaravelForms\Components;
 
 use Coyote6\LaravelForms\Traits\InputAttributes;
 use Coyote6\LaravelForms\Traits\HtmlContent;
-use Coyote6\LaravelForms\Traits\LivewireModel;
+use Coyote6\LaravelForms\Traits\LivewireModelComponent;
 use Coyote6\LaravelForms\Traits\Render;
 use Coyote6\LaravelForms\Traits\Rules;
 
@@ -15,7 +15,7 @@ class Textarea {
 
     use InputAttributes,
 		HtmlContent,
-		LivewireModel,
+		LivewireModelComponent,
         Render,
 		Rules;
 
